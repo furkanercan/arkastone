@@ -2,7 +2,7 @@ import numpy as np
 import math
 from src.rx.decoders.decoder import Decoder
 from src.rx.demodulator import Demodulator
-from src.common.odfm import OFDM
+from src.common.ofdm import OFDM
 from src.rx.rx_ofdm import OFDMReceiver
 
 class Receiver:

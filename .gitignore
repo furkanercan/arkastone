@@ -25,6 +25,7 @@ dist/
 *.DS_Store
 output/*
 todo.list
+TODO.md
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
