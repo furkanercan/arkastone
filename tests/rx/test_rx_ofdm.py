@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from src.tx.tx_ofdm import OFDMTransmitter
 from src.rx.rx_ofdm import OFDMReceiver
-from src.common.odfm import OFDM
+from src.common.ofdm import OFDM
 
 config = {
     "num_subcarriers": 16,

@@ -1,7 +1,7 @@
 import numpy as np
 from src.tx.encoders.encoder import Encoder
 from src.tx.modulator import Modulator
-from src.common.odfm import OFDM
+from src.common.ofdm import OFDM
 from src.tx.tx_ofdm import OFDMTransmitter
 
 class Transmitter:
