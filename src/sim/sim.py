@@ -54,6 +54,16 @@ class Simulation:
     def get_avg_iters(self, idx):
         return self.count_dec_iters[idx]/self.count_frame[idx]
 
+    def get_ber_results(self, idx, len_k):
+        return {
+            "ber": self.get_ber(idx, len_k),
+            "fer": self.get_bler(idx),
+            "avg_steps": self.get_avg_steps(idx),
+            "avg_iters": self.get_avg_iters(idx),
+            "frames": self.count_frame[idx],
+            "errors": self.count_frame_error[idx]
+        }
+
     def update_run_results(self, idx, len_k):
         self.ber[idx]  = self.get_ber(idx,len_k)
         self.bler[idx] = self.get_bler(idx)

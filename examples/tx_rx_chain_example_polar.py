@@ -16,7 +16,7 @@ from src.utils.timekeeper import *
 
 seed = 42
 np.random.seed(seed)
-config_file = "ref/config_polar.json5"
+config_file = "configs/config_polar.json5"
 config = ConfigLoader(config_file).get()
 run_id = create_run_id(config["code"]["type"], seed) #Make part of sim_config
 output_dir = create_output_folder(run_id) #Make part of sim_config
