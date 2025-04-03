@@ -7,7 +7,7 @@ class ReedSolomonEncoder:
     n being 2^m-1, puncture otherwise
     total info bits = k * m
     """
-    def __init__(self, n, k, primitive_poly=0x11D):
+    def __init__(self, n, k, m=8, primitive_poly=0x11D):
         """
         Initializes the RS encoder.
         :param n: Codeword length (Total symbols = Data symbols + Parity symbols)
@@ -17,7 +17,7 @@ class ReedSolomonEncoder:
         assert n > k, "n must be greater than k for Reed-Solomon encoding"
         self.n = n
         self.k = k
-        self.gf = GF(m=8, primitive_poly=primitive_poly)
+        self.gf = GF(m, primitive_poly=primitive_poly)
         self.generator_poly = self._compute_generator_poly()
     
     def _compute_generator_poly(self):
@@ -59,10 +59,9 @@ class ReedSolomonEncoder:
             coef = msg_poly[i]
             if coef != 0: 
                 for j in range(len(self.generator_poly)):
-                    print("asdadas", self.generator_poly[j], "   ", coef)
                     msg_poly[i + j] ^= self.gf.mul(self.generator_poly[j], coef)
         
         # Append parity symbols to data
         parity = msg_poly[self.k:]
-        print(parity)
+        # print(parity)
         return data + parity
