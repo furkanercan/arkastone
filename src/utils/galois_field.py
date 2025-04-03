@@ -45,6 +45,11 @@ class GF:
 
     def div(self, a, b):
         """Division using logarithm and exponentiation tables."""
+        # print("a:", a)
+        # print("b:", b)
+        # print("self.log_table[a]:", self.log_table[a])
+        # print("self.log_table[b]:", self.log_table[b])
+        # print("self.field_size:", self.field_size)
         if b == 0:
             raise ZeroDivisionError("Division by zero in GF(2^m)")
         if a == 0:
