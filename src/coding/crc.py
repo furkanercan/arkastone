@@ -4,9 +4,17 @@ def hex_to_bin_list(hex_str):
     bin_str = bin(int(hex_str, 16))[2:]  # Convert hex to binary string
     return [int(bit) for bit in bin_str]  # Convert binary string to list of integers
 
-def crc_encode(vec_info, vec_info_crc, CRC_bin, len_k):
+def crc_encode(vec_info, vec_info_crc, CRC_bin, len_k, preload_val=0):
     vec_info_crc[:len_k] = vec_info
     vec_info_crc[len_k:] = 0
+
+    if(preload_val == 1): #preload_val can be either 0 or 1
+        vec_info_crc[len_k:] = 1
+
+    # for idx, val in enumerate(vec_info_crc):
+    #     print(val, "/")
+    # print("\n")
+
     for i in range(len_k):
         if vec_info_crc[i] != 0:
             for j in range(len(CRC_bin)):
@@ -16,6 +24,45 @@ def crc_encode(vec_info, vec_info_crc, CRC_bin, len_k):
 
     return vec_info_crc
 
+def compute_crc_5g_polar(vec_info: list[int], len_r=24, prefill_val=0) -> list[int]:
+    """
+    Computes a CRC of length len_r using 5G-compliant polynomial and optional preload.
+
+    Args:
+        vec_info (list[int]): Information bits (0 or 1)
+        len_r (int): CRC length, default is 24 (used in polar coding)
+        prefill_val (int): Preload value for CRC register (e.g., 0xFFFFFF for DCI)
+
+    Returns:
+        list[int]: The CRC bits as a list of 0s and 1s
+    """
+    _, crc_poly = instantiate_crcs_5g(len_r)
+    len_k = len(vec_info)
+    vec_info_crc = np.zeros(len_k + 24, dtype=int)
+    crc_encoded = crc_encode(vec_info, vec_info_crc, crc_poly, len_k, prefill_val)
+    return crc_encoded[len_k:].tolist()
+
+
+def instantiate_crcs_5g(len_r):
+    CRC_bin = [0] * (len_r + 1)
+    
+    crc_polys = {
+        6:  0x21,  # 5G
+        11: 0x621,  # 5G
+        # 16: 0x1021,  # 5G
+        24: 0xB2B117,  # 5G
+    }
+
+    if len_r not in crc_polys:
+        raise ValueError(f"Unsupported 5G CRC length: {len_r}. Valid options are {list(crc_polys.keys())}.")
+    
+    CRC_poly = crc_polys.get(len_r, 0)
+    
+    CRC_bin[0] = 1
+    for i in range(len_r):
+        CRC_bin[len_r - i] = (CRC_poly >> i) & 1
+
+    return CRC_poly, CRC_bin
 
 
 def instantiate_crcs(len_r):
