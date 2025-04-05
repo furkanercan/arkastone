@@ -1,4 +1,5 @@
 from src.coding.crc import *
+from src.coding.polar.rnti_scrambling import *
 
 def test_crc24_polar_instantiation():
     poly, crc_bin = instantiate_crcs(24)
@@ -58,3 +59,16 @@ def test_crc_5g_polar_dci_preload():
 
 
 # TODO: create a set of tests that goes over 1000s of checks for comprehensiveness.
+
+
+
+
+
+
+
+def test_rnti_scrambling():
+    crc = [0] * 24
+    rnti = 0xABCD
+    scrambled = rnti_scramble_crc(crc, rnti)
+    assert scrambled[:8] == [0]*8
+    assert scrambled[8:] == [(rnti >> i) & 1 for i in reversed(range(16))]
