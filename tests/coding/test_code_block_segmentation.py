@@ -1,5 +1,5 @@
 import pytest
-from src.coding.polar.nr5g.code_block_segmentation import segment_transport_block
+from src.coding.polar.nr5g.components.code_block_segmentation import segment_transport_block
 
 def test_segmentation_even_length():
     tb = [1, 0, 0, 1, 1, 1]  # A = 6

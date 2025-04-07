@@ -8,6 +8,8 @@ def pucch_encoder(input_bits, wrapper):
         list[int]: Encoded bits.
     """
     # Implement PUCCH-specific encoding logic
+    # Get reliability indices
+    # If channel interleaver is used, apply it to rel indices to get interleaved indices for pre-freezing (Q1)
     # Segmentation
     # Rest of logic
     # Concatenation
