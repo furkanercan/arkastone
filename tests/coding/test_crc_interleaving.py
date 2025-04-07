@@ -1,5 +1,5 @@
 import pytest
-from src.coding.polar.crc_interleaving import *
+from src.coding.polar.nr5g.crc_interleaving import *
 # Assume your function is called crc_interleave and uses a verified interleaver pattern.
 
 def test_output_length():

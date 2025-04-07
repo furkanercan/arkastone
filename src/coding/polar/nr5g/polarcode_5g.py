@@ -26,6 +26,8 @@ class PolarCodeChannelConfig:
         self.n2 = self._compute_n2()
         self.n = max(self.nmin, min(self.n1, self.n2, self.nmax))
         self.N = 2 ** self.n
+        self.R = self.K/self.E
+        self.rm = self.decide_rate_matching_scheme()
         # print(self.summary())
         self.validate()
 
@@ -34,7 +36,6 @@ class PolarCodeChannelConfig:
         self.nmax = 10
         self.input_bits_interleaving = False
         self.channel_interleaver = False
-        self.segmentation = False
         self.pc_bits = 0
         self.pc_row_weight = 0
 
@@ -43,9 +44,8 @@ class PolarCodeChannelConfig:
             if self.A >= 20:
                 self.crc = CRCSpec("CRC11", 0x621, 11)
                 self.G_min = 31
-                if self.A >= 1013 or (self.A >= 360 and self.G >= 1088):
+                if (1066 >= self.A >= 1013 and 1088 >= self.G >= 1036 ) or (1706 >= self.A >= 360 and 16385 >= self.G >= 1088):
                     self.G_max = 16384
-                    self.segmentation = True
                 else:
                     self.G_max = 8192
             elif 12 <= self.A <= 19:
@@ -69,6 +69,19 @@ class PolarCodeChannelConfig:
         else:
             raise ValueError(f"Unsupported channel type: {self.channel_type}")
 
+    def decide_rate_matching_scheme(self):
+        """
+        Decide the rate matching scheme based on 5G NR rules.
+        Returns: one of 'puncturing', 'shortening', or 'repetition'
+        """
+        if self.E <= self.N:
+            if self.R <= 7/16:
+                return 'puncturing'
+            else:
+                return 'shortening'
+        else:
+            return 'repetition'
+
     def _compute_n1(self):
         log2_G = math.ceil(math.log2(self.G))
         threshold1 = (9 / 8) * (2 ** (log2_G - 1))
@@ -91,15 +104,16 @@ class PolarCodeChannelConfig:
             "n2": self.n2,
             "n": self.n,
             "N": self.N,
+            "R": self.R,
             "nmin": self.nmin,
             "nmax": self.nmax,
             "input_bits_interleaving": self.input_bits_interleaving,
             "channel_interleaver": self.channel_interleaver,
-            "segmentation": self.segmentation,
             "pc_bits": self.pc_bits,
             "pc_row_weight": self.pc_row_weight,
             "G_range": (self.G_min, self.G_max),
             "A_range": (self.A_min, self.A_max),
+            "rate_matching_scheme": (self.rm),
             "valid_config": self.validate()
         }
 
@@ -107,10 +121,10 @@ class PolarCodeChannelConfig:
         if self.channel_type in ("PUCCH", "PUSCH"):
             if not (12 <= self.A <= 1706):
                 raise ValueError(f"[UL] A={self.A} must be between 12 and 1706.")
-            if not (18 <= self.G <= 8192) and not self.segmentation:
-                raise ValueError(f"[UL] G={self.G} must be between 18 and 8192.")
-            if self.segmentation and self.G > 16384:
-                raise ValueError(f"[UL] G={self.G} exceeds 16384 with segmentation enabled.")
+            # if not (18 <= self.G <= 8192) and not self.segmentation:
+            #     raise ValueError(f"[UL] G={self.G} must be between 18 and 8192.")
+            # if self.segmentation and self.G > 16384:
+            #     raise ValueError(f"[UL] G={self.G} exceeds 16384 with segmentation enabled.")
 
         elif self.channel_type == "PDCCH":
             if not (1 <= self.A <= 140):
