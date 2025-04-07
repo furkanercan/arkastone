@@ -159,3 +159,23 @@ def test_validate_valid(A, G, channel_type):
         wrapper.validate()
     except ValueError:
         pytest.fail(f"validate() raised ValueError unexpectedly for channel type '{channel_type}'")
+
+# @pytest.mark.parametrize("N, regular_indices, expected_interleaved_indices", [
+#     (64, 
+#      [63, 62, 61, 59, 55, 47, 31, 60, 58, 57, 54, 53, 46, 51, 45, 30, 43, 
+#       29, 39, 27, 56, 23, 52, 15, 50, 44, 49, 42, 28, 41, 38, 22, 25, 37, 
+#       26, 35, 21, 14, 48, 13, 19, 40, 11, 7, 36, 24, 34, 20, 33, 12, 18, 
+#       10, 17, 6, 9, 5, 3, 32, 16, 8, 4, 2, 1, 0],
+#      [63, 62, 61, 59, 60, 58, 57, 56, 55, 47, 54, 46, 53, 45, 52, 44, 51, 43, 
+#       50, 42, 49, 41, 48, 40, 31, 30, 29, 27, 28, 26, 25, 24]),
+#     (512, 
+#      [...regular reliability indices for N=512...],  # Replace with actual indices
+#      [...expected interleaved indices for N=512...]),  # Replace with actual indices
+# ])
+# def test_interleaved_reliability_indices(N, regular_indices, expected_interleaved_indices):
+#     """
+#     Test the interleaved reliability index sequence.
+#     """
+#     wrapper = PolarNR5GWrapper(25, 50, 'PUCCH')  # Example initialization
+#     interleaved_indices = wrapper.apply_interleaver(regular_indices, N)
+#     assert interleaved_indices == expected_interleaved_indices
