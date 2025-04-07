@@ -1,5 +1,5 @@
 import pytest
-from src.coding.polar.polarcode_5g import PolarCodeChannelConfig
+from src.coding.polar.nr5g.polarcode_5g import PolarCodeChannelConfig
 
 # ✅ Valid config: typical PUSCH values (A=56, G=864)
 def test_valid_pusch():

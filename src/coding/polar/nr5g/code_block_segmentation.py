@@ -1,4 +1,4 @@
-def segment_transport_block(tb_bits, C):
+def segment_transport_block(tb_bits, A):
     """
     Segments the transport block if needed and appends 24-bit CRC to each block.
     Used in PUCCH and PUSCH.
@@ -12,13 +12,6 @@ def segment_transport_block(tb_bits, C):
     Returns:
         List of code blocks (each a list[int]), with CRC24B appended.
     """
-    A = len(tb_bits)
-
-    if C == 1:
-        return [tb_bits]  # No segmentation needed
-
-    if C != 2:
-        raise ValueError("Only C = 1 or C = 2 supported in this function.")
 
     if A % 2 == 1:
         tb_bits = [0] + tb_bits  # prepend to make length even
