@@ -1,5 +1,5 @@
 import pytest
-from src.coding.polar.nr5g.code_block_concatenation import concatenate_code_blocks
+from src.coding.polar.nr5g.components.code_block_concatenation import concatenate_code_blocks
 
 def test_single_block_no_padding_g0():
     block = [[1, 0, 1, 1]]

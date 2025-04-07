@@ -1,5 +1,5 @@
 from src.coding.crc import *
-from src.coding.polar.nr5g.rnti_scrambling import *
+from src.coding.polar.nr5g.components.rnti_scrambling import *
 
 def test_crc24_polar_instantiation():
     poly, crc_bin = instantiate_crcs(24)
