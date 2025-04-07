@@ -2,6 +2,7 @@ import math
 from dataclasses import dataclass
 from src.coding.polar.nr5g.polar_nr5g_encoder_chains import pucch_encoder, pusch_encoder, pdcch_encoder, pbch_encoder
 from src.coding.polar.nr5g.polar_nr5g_decoder_chains import pucch_decoder, pusch_decoder, pdcch_decoder, pbch_decoder
+from src.coding.polar.nr5g.components.subblock_interleaver import subblock_interleaver
 
 
 @dataclass
@@ -49,6 +50,7 @@ class PolarNR5GWrapper:
         
         self._set_master_code_length_N()
         self._get_reliability_indices()
+        self.reliability_indices_interleaved = subblock_interleaver(self.reliability_indices, self.N)
         self.R = self.K/self.E
         self._set_rate_matching_scheme()
 
