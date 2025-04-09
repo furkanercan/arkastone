@@ -10,7 +10,7 @@ RATE_MATCHING_MAP = {
 }
 
 @pytest.mark.parametrize("csv_file", [
-    "/home/furkan/Documents/communications_project/tests/coding/resources/nr5g_polar_test_data_valerio.csv"
+    "tests/coding/resources/nr5g_polar_test_data_valerio.csv"
 ])
 def test_resource_based(csv_file):
     """
