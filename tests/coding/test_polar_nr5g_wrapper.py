@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from src.coding.polar.nr5g.polar_nr5g_wrapper import PolarNR5GWrapper
 
 
@@ -53,7 +54,7 @@ def test_segmentation_flag(A, G, channel_type, expected_segmentation):
     (10, 50, 'PDCCH', "CRC24"),
     (32, 864, 'PBCH', "CRC24"),
 ])
-def test_coding_parameters(A, G, channel_type, expected_crc_name):
+def test_coding_parameters_crc(A, G, channel_type, expected_crc_name):
     wrapper = PolarNR5GWrapper(A, G, channel_type)
     assert wrapper.crc.name == expected_crc_name
 
@@ -133,7 +134,7 @@ def test_get_reliability_indices_n512(expected_N, expected_indices):
     (100, 100, 'PUCCH'),  # A is equal to G
     (900, 864, 'PBCH'),  # A is greater than G
 ])
-def test_validate_invalid(A, G, channel_type):
+def test_validate_invalid_A_G(A, G, channel_type):
     """
     Test that the PolarNR5GWrapper class raises a ValueError during initialization
     for invalid A or G values, or when A is not smaller than G.
@@ -150,7 +151,7 @@ def test_validate_invalid(A, G, channel_type):
     (140, 8192, 'PDCCH'),  # Valid A and G for PDCCH
     (32, 864, 'PBCH'),  # Valid A and G for PBCH
 ])
-def test_validate_valid(A, G, channel_type):
+def test_validate_valid_A_G(A, G, channel_type):
     """
     Test that the validate function does not raise an error for valid A and G values.
     """
@@ -160,22 +161,234 @@ def test_validate_valid(A, G, channel_type):
     except ValueError:
         pytest.fail(f"validate() raised ValueError unexpectedly for channel type '{channel_type}'")
 
-# @pytest.mark.parametrize("N, regular_indices, expected_interleaved_indices", [
-#     (64, 
-#      [63, 62, 61, 59, 55, 47, 31, 60, 58, 57, 54, 53, 46, 51, 45, 30, 43, 
-#       29, 39, 27, 56, 23, 52, 15, 50, 44, 49, 42, 28, 41, 38, 22, 25, 37, 
-#       26, 35, 21, 14, 48, 13, 19, 40, 11, 7, 36, 24, 34, 20, 33, 12, 18, 
-#       10, 17, 6, 9, 5, 3, 32, 16, 8, 4, 2, 1, 0],
-#      [63, 62, 61, 59, 60, 58, 57, 56, 55, 47, 54, 46, 53, 45, 52, 44, 51, 43, 
-#       50, 42, 49, 41, 48, 40, 31, 30, 29, 27, 28, 26, 25, 24]),
-#     (512, 
-#      [...regular reliability indices for N=512...],  # Replace with actual indices
-#      [...expected interleaved indices for N=512...]),  # Replace with actual indices
-# ])
-# def test_interleaved_reliability_indices(N, regular_indices, expected_interleaved_indices):
-#     """
-#     Test the interleaved reliability index sequence.
-#     """
-#     wrapper = PolarNR5GWrapper(25, 50, 'PUCCH')  # Example initialization
-#     interleaved_indices = wrapper.apply_interleaver(regular_indices, N)
-#     assert interleaved_indices == expected_interleaved_indices
+@pytest.mark.parametrize("A, G, channel_type, expected_params", [
+    # Test cases for PUCCH
+    (20, 100, 'PUCCH', {"A_min": 12, "A_max": 1706, "G_min": 31, "G_max": 8192, "pc_bits": 0, "pc_row_weight": 0}),
+    (15, 200, 'PUCCH', {"A_min": 12, "A_max": 1706, "G_min": 18, "G_max": 8192, "pc_bits": 3, "pc_row_weight": 1}),
+    (15, 20,  'PUCCH', {"A_min": 12, "A_max": 1706, "G_min": 18, "G_max": 8192, "pc_bits": 3, "pc_row_weight": 0}),
+    (15, 300, 'PUCCH', {"A_min": 12, "A_max": 1706, "G_min": 18, "G_max": 8192, "pc_bits": 3, "pc_row_weight": 1}),
+    # Test cases for PDCCH
+    (10, 50, 'PDCCH', {"A_min": 1, "A_max": 140, "G_min": 25, "G_max": 8192, "pc_bits": 0, "pc_row_weight": 0}),
+    # Test cases for PBCH
+    (32, 864, 'PBCH', {"A_min": 32, "A_max": 32, "G_min": 864, "G_max": 864, "pc_bits": 0, "pc_row_weight": 0}),
+])
+def test_coding_parameters(A, G, channel_type, expected_params):
+    """
+    Test the coding parameters (A_min, A_max, G_min, G_max, pc_bits, pc_row_weight)
+    for different channel types.
+    """
+    wrapper = PolarNR5GWrapper(A, G, channel_type)
+
+    # Assertions for coding parameters
+    assert wrapper.A_min == expected_params["A_min"], f"A_min mismatch for {channel_type}"
+    assert wrapper.A_max == expected_params["A_max"], f"A_max mismatch for {channel_type}"
+    assert wrapper.G_min == expected_params["G_min"], f"G_min mismatch for {channel_type}"
+    assert wrapper.G_max == expected_params["G_max"], f"G_max mismatch for {channel_type}"
+    assert wrapper.pc_bits == expected_params["pc_bits"], f"pc_bits mismatch for {channel_type}"
+    assert wrapper.pc_row_weight == expected_params["pc_row_weight"], f"pc_row_weight mismatch for {channel_type}"
+
+
+
+@pytest.mark.parametrize("A, G, channel_type, expected_n, expected_N", [
+    # Test cases for PUCCH
+    (100, 200, 'PUCCH', 8, 256),  # Example case where nmin = 5
+    (1000, 2000, 'PUCCH', 10, 1024),  # Example case where nmax = 10
+    # Test cases for PDCCH
+    (50, 100, 'PDCCH', 7, 128),  # Example case for PDCCH
+    (100, 500, 'PDCCH', 9, 512),  # Example case where nmax = 9
+    # Test cases for PBCH
+    (32, 864, 'PBCH', 9, 512),  # PBCH-specific case
+])
+def test_set_master_code_length_N(A, G, channel_type, expected_n, expected_N):
+    """
+    Test the _set_master_code_length_N method to ensure it calculates n and N correctly.
+    """
+    wrapper = PolarNR5GWrapper(A, G, channel_type)
+
+    # Assertions for n and N
+    assert wrapper.n == expected_n, f"n mismatch for {channel_type} with A={A}, G={G}: expected {expected_n}, got {wrapper.n}"
+    assert wrapper.N == expected_N, f"N mismatch for {channel_type} with A={A}, G={G}: expected {expected_N}, got {wrapper.N}"
+
+
+@pytest.mark.parametrize("G, A, channel_type, expected_N", [
+    (24, 15, 'PUCCH', 32),
+    (61, 45, 'PUCCH', 64),
+    (76, 22, 'PUCCH', 128),
+    (240, 117, 'PUCCH', 256),
+    (325, 60, 'PUCCH', 512),
+    (1009, 719, 'PUCCH', 1024),
+    (43, 15, 'PDCCH', 64),
+    (75, 8, 'PDCCH', 128),
+    (228, 81, 'PDCCH', 256),
+    (515, 66, 'PDCCH', 512),
+    (864, 32, 'PBCH', 512),
+])
+def test_create_polar_encoder_matrix(G, A, channel_type, expected_N):
+    """
+    Test the create_polar_encoder_matrix method to ensure the generated NxN matrix
+    matches the expected polar encoder matrix.
+    """
+    # Initialize the wrapper
+    wrapper = PolarNR5GWrapper(A, G, channel_type)
+
+    # Generate the polar encoder matrix using the wrapper
+    generated_matrix = wrapper.matG_NxN
+
+    # Calculate the expected polar encoder matrix
+    base_matrix = np.array([[1, 0], [1, 1]], dtype=int)  # Base matrix for polar encoding
+    log2_N = int(np.log2(expected_N))  # Calculate log2 of expected_N
+    expected_matrix = base_matrix
+    for _ in range(log2_N - 1):
+        expected_matrix = np.kron(expected_matrix, base_matrix)  # Kronecker product
+        # # Write the expected matrix to a file
+        # with open(f"expected_matrix_{channel_type}_A{A}_G{G}.txt", "w") as file:
+        #     for row in expected_matrix:
+        #         file.write(" ".join(map(str, row)) + "\n")
+    # Compare the generated matrix with the expected matrix
+    assert np.array_equal(generated_matrix, expected_matrix), (
+        f"Polar encoder matrix mismatch for A={A}, G={G}, Channel={channel_type}:\n"
+        f"Expected:\n{expected_matrix}\nGenerated:\n{generated_matrix}"
+    )
+
+
+# @pytest.mark.parametrize("A, G, channel_type, expected_Qf1, expected_Qf2, expected_Qf3, expected_frozen_indices, expected_info_indices", [
+@pytest.mark.parametrize("A, G, channel_type, expected_frozen_indices, expected_info_indices", [
+    # Test cases for PUCCH
+    (15, 24, 'PUCCH', 
+    #  [24, 25, 26, 28, 27, 29, 30, 31], #Qf1
+    #  [],  #Qf2
+    #  [],  #Qf3
+     [24, 25, 26, 27, 28, 29, 30, 31],  #frozen_indices
+     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]), # info_indices
+
+    (45, 61, 'PUCCH', 
+    #  [61, 62, 63], #Qf1
+    #  [],  #Qf2
+    #  [0, 1, 2, 4, 8],  #Qf3
+     [0, 1, 2, 4, 8, 61, 62, 63],  #frozen_indices
+     [3, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 
+      34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60]),  # info_indices
+    
+    (22, 76, 'PUCCH', 
+    #  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 12, 13, 14, 15, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 64, 65, 66, 67, 36, 37, 38, 39, 68, 69, 70, 71, 40, 41, 42, 43], #Qf1
+    #  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52],  #Qf2
+    #  [92, 105, 102, 90, 101, 89, 60, 86, 99, 58, 85, 78, 112, 57, 83, 54, 77, 53, 104, 75, 100, 88, 98, 84, 97, 56, 82, 76, 73, 81, 74, 96, 80, 72],  #Qf3
+     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 64, 65, 66, 67, 68, 69, 70, 71, 92, 105, 102, 90, 101, 89, 60, 86, 99, 58, 85, 78, 112, 57, 83, 54, 77, 53, 104, 75, 100, 88, 98, 84, 97, 56, 82, 76, 73, 81, 74, 96, 80, 72],  #frozen_indices
+     [127, 126, 125, 123, 119, 111, 95, 124, 63, 122, 121, 118, 117, 110, 115, 109, 94, 107, 93, 103, 62, 120, 91, 61, 116, 87, 114, 59, 108, 79, 113, 55, 106])  # info_indices
+])
+# def test_set_subchannel_allocation(A, G, channel_type, expected_Qf1, expected_Qf2, expected_Qf3, expected_frozen_indices, expected_info_indices):
+def test_set_subchannel_allocation(A, G, channel_type, expected_frozen_indices, expected_info_indices):
+    """
+    Test the _set_subchannel_allocation method to ensure it calculates Qf1, Qf2, Qf3,
+    frozen_indices, and info_indices correctly.
+    """
+    # Initialize the wrapper
+    wrapper = PolarNR5GWrapper(A, G, channel_type)
+
+    # # Assertions for Qf1
+    # assert sorted(wrapper.Qf1) == sorted(expected_Qf1), (
+    #     f"Qf1 mismatch for {channel_type} with A={A}, G={G}: Expected: {sorted(expected_Qf1)} Generated: {sorted(wrapper.Qf1)}"
+    # )
+
+    # # Assertions for Qf2
+    # assert sorted(wrapper.Qf2) == sorted(expected_Qf2), (
+    #     f"Qf2 mismatch for {channel_type} with A={A}, G={G}: Expected: {expected_Qf2} Generated: {wrapper.Qf2}"
+    # )
+
+    # # Assertions for Qf3
+    # assert sorted(wrapper.Qf3) == sorted(expected_Qf3), (
+    #     f"Qf3 mismatch for {channel_type} with A={A}, G={G}: Expected: {expected_Qf3} Generated: {wrapper.Qf3}"
+    # )
+
+    # Assertions for frozen_indices
+    assert sorted(wrapper.frozen_indices) == sorted(expected_frozen_indices), (
+        f"frozen_indices mismatch for {channel_type} with A={A}, G={G}: Expected: {expected_frozen_indices} Generated: {wrapper.frozen_indices}"
+    )
+
+    # Assertions for info_indices
+    assert sorted(wrapper.info_indices) == sorted(expected_info_indices), (
+        f"info_indices mismatch for {channel_type} with A={A}, G={G}:\n"
+        f"Expected: {expected_info_indices}\nGenerated: {wrapper.info_indices}"
+    )
+
+@pytest.mark.parametrize("G, A, channel_type, expected_N, expected_row_weights", [
+    (24, 15, 'PUCCH', 32, [1, 2, 2, 4, 2, 4, 4, 8, 2, 4, 4, 8, 4, 8, 8, 16, 2, 4, 4, 8, 4, 8, 8, 16]),
+    (61, 45, 'PUCCH', 64, [4, 4, 4, 8, 4, 4, 8, 4, 8, 8, 16, 2, 4, 4, 8, 4, 8, 8, 16, 4, 8, 8, 16, 8, 16, 16, 32, 2, 4, 4, 8, 4, 8, 8, 16, 4, 8, 8, 16, 8, 16, 16, 32, 4, 8, 8, 16, 8, 16, 16, 32, 8, 16, 16, 32, 16]),
+    (76, 22, 'PUCCH', 128, [32, 32, 32, 32, 64, 32, 32, 32, 32, 32, 64, 32, 16, 32, 16, 32, 32, 64, 16, 16, 32, 16, 32, 32, 64, 16, 32, 32, 64, 32, 64, 64, 128]),
+])
+def test_calculate_row_weights(A, G, channel_type, expected_N, expected_row_weights):
+    """
+    Test the _calculate_row_weights method to ensure it calculates row weights correctly.
+    """
+    # Initialize the wrapper
+    wrapper = PolarNR5GWrapper(A, G, channel_type)
+
+    # Generate the row weights using the wrapper
+    row_weights = wrapper._calculate_row_weights()
+
+    # Compare the generated row weights with the expected row weights
+    assert row_weights.tolist() == expected_row_weights, (
+        f"Row weights mismatch for A={A}, G={G}, Channel={channel_type}:\n"
+        f"Expected: {expected_row_weights}\nGenerated: {row_weights.tolist()}"
+    )
+
+
+
+@pytest.mark.parametrize("A, G, channel_type, expected_parity_check_indices", [
+    # Test cases for PUCCH
+    (15, 24, 'PUCCH', [0, 1, 2]),  # Example parity check indices
+    (45, 61, 'PUCCH', []),  # Example parity check indices
+    (19,260, 'PUCCH',[242, 244, 255]), #N=256,RM=R,seg=0
+    # Test cases for PDCCH
+    (22, 76, 'PDCCH', []),  # Example parity check indices
+    # Test cases for PBCH
+    (32, 864, 'PBCH', []),  # Example parity check indices
+])
+def test_get_parity_check_indices(A, G, channel_type, expected_parity_check_indices):
+    """
+    Test the _get_parity_check_indices method to ensure it calculates parity check indices correctly.
+    """
+    # Initialize the wrapper
+    wrapper = PolarNR5GWrapper(A, G, channel_type)
+
+    # Get the parity check indices using the wrapper
+    parity_check_indices = wrapper.pc_indices
+    info_indices = wrapper.info_indices
+    row_weights = wrapper.row_weights
+    print("row_weights dumas: ", row_weights)
+    # print("info_indices dumas: ", info_indices)
+    max_row_weight_indices = wrapper.max_row_weight_indices
+    print("seda: self.max_row_weight_indices: ", max_row_weight_indices)
+
+    # Compare the generated parity check indices with the expected indices
+    assert sorted(parity_check_indices) == sorted(expected_parity_check_indices), (
+        f"Parity check indices mismatch for {channel_type} with A={A}, G={G}:\n"
+        f"Expected: {expected_parity_check_indices}\nGenerated: {parity_check_indices}"
+    )
+
+
+@pytest.mark.parametrize("A, G, channel_type, expected_interleaver_indices", [
+    # Test cases for PUCCH
+    (15, 24, 'PUCCH', [0, 7, 13, 18, 22, 1, 8, 14, 19, 23, 2, 9, 15, 20, 3, 10, 16, 21, 4, 11, 17, 5, 12, 6]),  # Example interleaver indices
+    (45, 61, 'PUCCH', [0, 11, 21, 30, 38, 45, 51, 56, 60, 1, 12, 22, 31, 39, 46, 52, 57, 2, 13, 23, 32, 40, 47, 53, 58, 3, 14, 24, 33, 41, 48, 54, 59, 4, 15, 25, 34, 42, 49, 55, 5, 16, 26, 35, 43, 50, 6, 17, 27, 36, 44, 7, 18, 28, 37, 8, 19, 29, 9, 20, 10]),  # Example interleaver indices
+    # # Test cases for PDCCH
+    # (22, 76, 'PDCCH', []),  # No channel interleaver for PDCCH
+    # # Test cases for PBCH
+    # (32, 864, 'PBCH', []),  # No channel interleaver for PBCH
+])
+def test_get_channel_interleaver_indices(A, G, channel_type, expected_interleaver_indices):
+    """
+    Test the _get_channel_interleaver_indices method to ensure it calculates
+    channel interleaver indices correctly.
+    """
+    # Initialize the wrapper
+    wrapper = PolarNR5GWrapper(A, G, channel_type)
+
+    # Get the channel interleaver indices using the wrapper
+    interleaver_indices = wrapper.channel_interleaver_indices
+
+    # Compare the generated interleaver indices with the expected indices
+    assert interleaver_indices == expected_interleaver_indices, (
+        f"Channel interleaver indices mismatch for {channel_type} with A={A}, G={G}:\n"
+        f"Expected: {expected_interleaver_indices}\nGenerated: {interleaver_indices}"
+    )

@@ -1,7 +1,8 @@
 import math
+import numpy as np
 from dataclasses import dataclass
-from src.coding.polar.nr5g.polar_nr5g_encoder_chains import pucch_encoder, pusch_encoder, pdcch_encoder, pbch_encoder
-from src.coding.polar.nr5g.polar_nr5g_decoder_chains import pucch_decoder, pusch_decoder, pdcch_decoder, pbch_decoder
+# from src.coding.polar.nr5g.polar_nr5g_encoder_chains import pucch_encoder, pusch_encoder, pdcch_encoder, pbch_encoder
+# from src.coding.polar.nr5g.polar_nr5g_decoder_chains import pucch_decoder, pusch_decoder, pdcch_decoder, pbch_decoder
 from src.coding.polar.nr5g.components.subblock_interleaver import subblock_interleaver
 
 
@@ -18,7 +19,11 @@ class PolarNR5GWrapper:
         Initializes the PolarNR5GWrapper class with the given parameters and sets up
         the necessary coding and segmentation configurations.
         Args:
-            A (int): Number of information bits (excluding CRC).
+            A (int): Number of informatio_compute_n1(self):
+
+_compute_n2(self):
+
+_set_master_code_length_N(self):n bits (excluding CRC).
             G (int): Rate-matched output length after concatenation.
             channel_type (str): Type of the communication channel.
         Attributes:
@@ -33,8 +38,8 @@ class PolarNR5GWrapper:
             R (float): Code rate, calculated as K/E.
         """
         self.A = A               # Number of information bits (no CRC)
-        self.G = G                      # Rate-matched output length after concatenation
-        self.E = G                      # Rate-matched output length before concatenation
+        self.G = G               # Rate-matched output length after concatenation
+        self.E = G               # Rate-matched output length before concatenation
         self.channel_type = channel_type
 
         self._set_segmentation_flag()
@@ -49,10 +54,16 @@ class PolarNR5GWrapper:
             self.K = self.A + self.crc.length
         
         self._set_master_code_length_N()
+        self.logN = int(math.log2(self.N))
         self._get_reliability_indices()
-        self.reliability_indices_interleaved = subblock_interleaver(self.reliability_indices, self.N)
+        vec_range_N = list(range(self.N)) # temp [0, 1, 2, ..., N-1] for interleaving
+        self.interleaved_indices = subblock_interleaver(vec_range_N, self.N)
         self.R = self.K/self.E
         self._set_rate_matching_scheme()
+        self._set_subchannel_allocation()
+        self._create_polar_encoder_matrix()
+        self._get_parity_check_indices()
+        self._get_channel_interleaver_indices()
 
     def _set_segmentation_flag(self):
         """
@@ -98,7 +109,7 @@ class PolarNR5GWrapper:
                 self.G_min = 18
                 self.G_max = 8192
                 self.pc_bits = 3
-                self.pc_row_weight = 0 if (self.G - self.A <= 175) else 1
+                self.pc_row_weight = 0 if (self.G - self.A <= 175) else 1 #TODO: check this condition
         elif self.channel_type == 'PDCCH':
             self.crc = CRCSpec("CRC24", 0xB2B117, 24)
             self.input_bits_interleaving = True
@@ -189,7 +200,7 @@ class PolarNR5GWrapper:
         else:
             self.reliability_indices = [x for x in master_reliability_index if x < self.N]
         
-        print(self.reliability_indices)
+        # print(self.reliability_indices)
 
 
     def _set_rate_matching_scheme(self):
@@ -204,6 +215,150 @@ class PolarNR5GWrapper:
                 self.rm = 'shortening'
         else:
             self.rm = 'repetition'
+
+    def _set_subchannel_allocation(self):
+        """
+        Calculate the set of frozen and non-frozen indices for polar coding based on the given parameters.
+        """
+
+        # Initialize frozen index lists
+        Qf1 = []
+        Qf2 = []
+        Qf3 = []
+
+        # Calculate Qf1 based on the rate matching scheme
+        if self.rm == 'puncturing':
+            Qf1 = self.interleaved_indices[:self.N - self.E]  # First N-E indices
+        elif self.rm == 'shortening':
+            Qf1 = self.interleaved_indices[-(self.N - self.E):]  # Last N-E indices
+        elif self.rm == 'repetition':
+            Qf1 = []  # Empty list for repetition
+
+        # Print Qf1 for debugging
+        # print(f"Qf1 (based on rate matching scheme): {Qf1}")
+
+        # Calculate Qf2 as [0, ..., T] if the scheme is 'puncturing'
+        if self.rm == 'puncturing':
+            # Calculate T based on the given formula
+            if self.E >= (3 / 4) * self.N:
+                T = math.ceil((3 / 4) * self.N - self.E / 2) - 1
+            else:
+                T = math.ceil((9 / 16) * self.N - self.E / 4) - 1
+            Qf2 = list(range(T + 1))  # [0, ..., T]
+        else:
+            Qf2 = []  # Empty list for others
+
+        # Print Qf2 for debugging
+        # print(f"Qf2 (calculated based on T): {Qf2}")
+
+        # Qf3 is derived from the remaining indices after excluding Qf1 and Qf2
+        remaining_indices = [x for x in self.reliability_indices if x not in Qf1 and x not in Qf2]
+        # print(f"Remaining Indices (after excluding Qf1 and Qf2): {remaining_indices}")
+        Qf3 = remaining_indices[(self.K + self.pc_bits):]  # Exclude the first K + n_pc indices
+
+        # Print Qf3 for debugging
+        # print(f"Qf3 (remaining indices after excluding Qf1 and Qf2): {Qf3}")
+
+        # Combine Qf1, Qf2, and Qf3 into frozen_indices
+        self.frozen_indices = list(set(Qf1 + Qf2 + Qf3))
+        # print(f"Frozen Indices (Qf1 + Qf2 + Qf3): {self.frozen_indices}")
+        
+        # Calculate info_indices as the complement of frozen_indices with respect to self.reliability_indices
+        self.info_indices = [x for x in self.reliability_indices if x not in self.frozen_indices]
+        # print(f"Information Indices (complement of frozen_indices): {self.info_indices}")
+
+
+    def _create_polar_encoder_matrix(self):
+        """
+        Creates the polar matrices:
+            - matG_kxN: The generator matrix in k-by-N form.
+            - matG_NxN: The generator matrix in N-by-N form.
+            - matHt   : The transposed parity-check matrix in N-by-(N-k) form. (TODO if needed)
+
+        Raises:
+            TypeError: If self.logN is not a positive integer.
+        """
+        if not isinstance(self.logN, int) or self.logN <= 0:
+            raise TypeError("self.logN must be a positive integer")
+        matG_core = np.array([[1, 0], [1, 1]])
+        matG = matG_core  # Core matrix as the initial value
+        for _ in range(self.logN-1):
+            matG = np.kron(matG, matG_core)
+
+        self.matG_NxN = matG                # Full NxN G matrix
+        self.matG_kxN = matG[list(sorted(self.info_indices))] # Pruned G matrix (kxN)
+        
+    def _get_parity_check_indices(self):
+        """
+        
+        """
+        self.row_weights = []
+        self.max_row_weight_indices = []
+        if(self.pc_bits == 0):
+            self.pc_indices = []
+        else: # pc_bits == 3
+            if(self.pc_row_weight == 1):
+                # Assign the two parity check bits to the next two lowest reliability indices
+                self.pc_indices = self.info_indices[-2:]
+                
+                self.row_weights = self._calculate_row_weights() # Calculate the row weights of the generator matrix
+                
+                # Find the list of indices of the max row weights
+                max_weight = max(self.row_weights)
+                # print(f"Max row weight: {max_weight}")
+                max_weight_indices = [i for i, weight in enumerate(self.row_weights) if weight == max_weight]
+                # print(f"Max row weight indices: {max_weight_indices}")
+                self.max_row_weight_indices = [sorted(self.info_indices)[i] for i in max_weight_indices]
+                # print(f"Max row weight indices (reliability): {self.max_row_weight_indices}")
+                self.max_row_weight_indices = [self.max_row_weight_indices[-1]]  # Keep only the last item
+
+                # Among them, find the one with the max reliability 
+                best_index = self.max_row_weight_indices[0]
+
+                # Append last parity check bit to that best index
+                self.pc_indices.append(best_index)
+
+            else:
+                # Assign all three parity check bits to the 3 lowest reliability indices
+                self.pc_indices = self.info_indices[-3:]
+                
+    def _calculate_row_weights(self):
+        """
+        Calculates the row weights of the generator matrix.
+        Returns:
+            list[int]: List of row weights for each row in the generator matrix.
+        """
+        # Calculate the row weights based on the generator matrix
+        row_weights = np.sum(self.matG_kxN, axis=1)
+        return row_weights
+
+    def _get_channel_interleaver_indices(self):
+        """
+        Determines the channel interleaver indices based on the value of E.
+
+        The method calculates the minimum triangular number T such that the sum of the first T natural numbers
+        (T * (T + 1) / 2) is greater than or equal to E. It then constructs a T x T matrix, filling it row-by-row
+        with indices from 0 to E-1. The matrix is read column-wise to generate the interleaver indices.
+        """
+        self.T = 0
+        while self.E > self.T * (self.T + 1) // 2:
+            self.T += 1
+        
+        # Create a self.T by self.T matrix and fill it row-by-row with indices starting from 0
+        self.matrix = np.full((self.T, self.T), -1)  # Initialize with -1 to handle missing indices
+        index = 0
+        for i in range(self.T):
+            for j in range(self.T-i):  # Stop one index earlier for each row
+                if index >= self.E:  # Stop entirely when index reaches E
+                    break
+                self.matrix[i, j] = index
+                index += 1
+            if index >= self.E:  # Break the outer loop as well
+                break
+        print("Channel interleaver matrix:")
+        print(self.matrix.tolist())
+        # Read the indices column-wise
+        self.channel_interleaver_indices = [x for x in self.matrix.T.flatten() if x != -1]
 
     def validate(self):
         """
@@ -224,43 +379,43 @@ class PolarNR5GWrapper:
                 f"Channel type '{self.channel_type}': A ({self.A}) must be smaller than G ({self.G})."
             )
 
-    def encode(self, input_bits):
-        """
-        Encodes the input bits using the appropriate encoder chain based on channel type.
-        Args:
-            input_bits (list[int]): List of input bits to encode.
-        Returns:
-            list[int]: Encoded bits.
-        """
-        if self.channel_type == 'PUCCH':
-            return pucch_encoder(input_bits, self)
-        elif self.channel_type == 'PUSCH':
-            return pusch_encoder(input_bits, self)
-        elif self.channel_type == 'PDCCH':
-            return pdcch_encoder(input_bits, self)
-        elif self.channel_type == 'PBCH':
-            return pbch_encoder(input_bits, self)
-        else:
-            raise ValueError(f"Unsupported channel type: {self.channel_type}")
+    # def encode(self, input_bits):
+    #     """
+    #     Encodes the input bits using the appropriate encoder chain based on channel type.
+    #     Args:
+    #         input_bits (list[int]): List of input bits to encode.
+    #     Returns:
+    #         list[int]: Encoded bits.
+    #     """
+    #     if self.channel_type == 'PUCCH':
+    #         return pucch_encoder(input_bits, self)
+    #     elif self.channel_type == 'PUSCH':
+    #         return pusch_encoder(input_bits, self)
+    #     elif self.channel_type == 'PDCCH':
+    #         return pdcch_encoder(input_bits, self)
+    #     elif self.channel_type == 'PBCH':
+    #         return pbch_encoder(input_bits, self)
+    #     else:
+    #         raise ValueError(f"Unsupported channel type: {self.channel_type}")
 
-    def decode(self, received_bits):
-        """
-        Decodes the received bits using the appropriate decoder chain based on channel type.
-        Args:
-            received_bits (list[int]): List of received bits to decode.
-        Returns:
-            list[int]: Decoded bits.
-        """
-        if self.channel_type == 'PUCCH':
-            return pucch_decoder(received_bits, self)
-        elif self.channel_type == 'PUSCH':
-            return pusch_decoder(received_bits, self)
-        elif self.channel_type == 'PDCCH':
-            return pdcch_decoder(received_bits, self)
-        elif self.channel_type == 'PBCH':
-            return pbch_decoder(received_bits, self)
-        else:
-            raise ValueError(f"Unsupported channel type: {self.channel_type}")
+    # def decode(self, received_bits):
+    #     """
+    #     Decodes the received bits using the appropriate decoder chain based on channel type.
+    #     Args:
+    #         received_bits (list[int]): List of received bits to decode.
+    #     Returns:
+    #         list[int]: Decoded bits.
+    #     """
+    #     if self.channel_type == 'PUCCH':
+    #         return pucch_decoder(received_bits, self)
+    #     elif self.channel_type == 'PUSCH':
+    #         return pusch_decoder(received_bits, self)
+    #     elif self.channel_type == 'PDCCH':
+    #         return pdcch_decoder(received_bits, self)
+    #     elif self.channel_type == 'PBCH':
+    #         return pbch_decoder(received_bits, self)
+    #     else:
+    #         raise ValueError(f"Unsupported channel type: {self.channel_type}")
 
     def summary(self):
         """

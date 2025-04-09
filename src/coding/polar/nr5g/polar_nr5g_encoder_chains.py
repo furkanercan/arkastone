@@ -1,3 +1,6 @@
+from src.coding.polar.nr5g.polar_nr5g_wrapper import PolarNR5GWrapper
+from src.coding.polar.nr5g.components.code_block_segmentation import segment_transport_block
+
 def pucch_encoder(input_bits, wrapper):
     """
     Encodes input bits for PUCCH channel.
@@ -10,6 +13,7 @@ def pucch_encoder(input_bits, wrapper):
     # Implement PUCCH-specific encoding logic
     # Get reliability indices
     # If channel interleaver is used, apply it to rel indices to get interleaved indices for pre-freezing (Q1)
+    
     # Segmentation
     # Rest of logic
     # Concatenation
