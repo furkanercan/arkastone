@@ -259,7 +259,7 @@ def test_create_polar_encoder_matrix(G, A, channel_type, expected_N):
     #  [],  #Qf2
     #  [],  #Qf3
      [24, 25, 26, 27, 28, 29, 30, 31],  #frozen_indices
-     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]), # info_indices
+     [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]), # info_indices [0, 1, 2] gone for pc_bits
 
     (45, 61, 'PUCCH', 
     #  [61, 62, 63], #Qf1
@@ -312,9 +312,8 @@ def test_set_subchannel_allocation(A, G, channel_type, expected_frozen_indices, 
     )
 
 @pytest.mark.parametrize("G, A, channel_type, expected_N, expected_row_weights", [
-    (24, 15, 'PUCCH', 32, [1, 2, 2, 4, 2, 4, 4, 8, 2, 4, 4, 8, 4, 8, 8, 16, 2, 4, 4, 8, 4, 8, 8, 16]),
-    (61, 45, 'PUCCH', 64, [4, 4, 4, 8, 4, 4, 8, 4, 8, 8, 16, 2, 4, 4, 8, 4, 8, 8, 16, 4, 8, 8, 16, 8, 16, 16, 32, 2, 4, 4, 8, 4, 8, 8, 16, 4, 8, 8, 16, 8, 16, 16, 32, 4, 8, 8, 16, 8, 16, 16, 32, 8, 16, 16, 32, 16]),
-    (76, 22, 'PUCCH', 128, [32, 32, 32, 32, 64, 32, 32, 32, 32, 32, 64, 32, 16, 32, 16, 32, 32, 64, 16, 16, 32, 16, 32, 32, 64, 16, 32, 32, 64, 32, 64, 64, 128]),
+    (24, 15, 'PUCCH', 32, [1,2,2,4,2,4,4,8,2,4,4,8,4,8,8,16,2,4,4,8,4,8,8,16,4,8,8,16,8,16,16,32]),
+    (61, 45, 'PUCCH', 64, [1,2,2,4,2,4,4,8,2,4,4,8,4,8,8,16,2,4,4,8,4,8,8,16,4,8,8,16,8,16,16,32,2,4,4,8,4,8,8,16,4,8,8,16,8,16,16,32,4,8,8,16,8,16,16,32,8,16,16,32,16,32,32,64]),
 ])
 def test_calculate_row_weights(A, G, channel_type, expected_N, expected_row_weights):
     """
@@ -322,14 +321,17 @@ def test_calculate_row_weights(A, G, channel_type, expected_N, expected_row_weig
     """
     # Initialize the wrapper
     wrapper = PolarNR5GWrapper(A, G, channel_type)
-
+    mylist = range(expected_N)
+    
     # Generate the row weights using the wrapper
-    row_weights = wrapper._calculate_row_weights()
+    row_weights = wrapper._calculate_row_weights(mylist)
+
+    # Convert generated row weights to Python integers
+    row_weights = list(map(int, row_weights))
 
     # Compare the generated row weights with the expected row weights
-    assert row_weights.tolist() == expected_row_weights, (
-        f"Row weights mismatch for A={A}, G={G}, Channel={channel_type}:\n"
-        f"Expected: {expected_row_weights}\nGenerated: {row_weights.tolist()}"
+    assert row_weights == expected_row_weights, (
+        f"Row weights mismatch for A={A}, G={G}, Channel={channel_type}: Generated: {row_weights}"
     )
 
 
@@ -338,7 +340,7 @@ def test_calculate_row_weights(A, G, channel_type, expected_N, expected_row_weig
     # Test cases for PUCCH
     (15, 24, 'PUCCH', [0, 1, 2]),  # Example parity check indices
     (45, 61, 'PUCCH', []),  # Example parity check indices
-    (19,260, 'PUCCH',[242, 244, 255]), #N=256,RM=R,seg=0
+    (19,260, 'PUCCH',[242, 244, 248]), #N=256,RM=R,seg=0
     # Test cases for PDCCH
     (22, 76, 'PDCCH', []),  # Example parity check indices
     # Test cases for PBCH
@@ -357,8 +359,8 @@ def test_get_parity_check_indices(A, G, channel_type, expected_parity_check_indi
     row_weights = wrapper.row_weights
     print("row_weights dumas: ", row_weights)
     # print("info_indices dumas: ", info_indices)
-    max_row_weight_indices = wrapper.max_row_weight_indices
-    print("seda: self.max_row_weight_indices: ", max_row_weight_indices)
+    min_row_weight_indices = wrapper.min_row_weight_indices
+    print("seda: self.min_row_weight_indices: ", min_row_weight_indices)
 
     # Compare the generated parity check indices with the expected indices
     assert sorted(parity_check_indices) == sorted(expected_parity_check_indices), (

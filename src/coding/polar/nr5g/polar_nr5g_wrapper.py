@@ -4,13 +4,8 @@ from dataclasses import dataclass
 # from src.coding.polar.nr5g.polar_nr5g_encoder_chains import pucch_encoder, pusch_encoder, pdcch_encoder, pbch_encoder
 # from src.coding.polar.nr5g.polar_nr5g_decoder_chains import pucch_decoder, pusch_decoder, pdcch_decoder, pbch_decoder
 from src.coding.polar.nr5g.components.subblock_interleaver import subblock_interleaver
-
-
-@dataclass
-class CRCSpec:
-    name: str
-    poly: int
-    length: int
+from src.coding.polar.nr5g.config.crc_config import CRCConfig
+from src.coding.polar.nr5g.config.pucch_config import PUCCHConfig
 
 
 class PolarNR5GWrapper:
@@ -60,10 +55,14 @@ _set_master_code_length_N(self):n bits (excluding CRC).
         self.interleaved_indices = subblock_interleaver(vec_range_N, self.N)
         self.R = self.K/self.E
         self._set_rate_matching_scheme()
-        self._set_subchannel_allocation()
-        self._create_polar_encoder_matrix()
-        self._get_parity_check_indices()
+        self._set_subchannel_allocation() #get frozen and (initial) info indices, i.e. info+crc+pc indices
+        self._create_polar_encoder_matrix() # create the NxN polar matrix
+        self._get_parity_check_indices() # get parity check indices and fine-tuned info indices for info and CRC bits
+        self._create_polar_encoder_matrix_optimized() # create the kxN polar matrix
         self._get_channel_interleaver_indices()
+        self.info_indices = sorted(self.info_indices)
+        self.pc_indices = sorted(self.pc_indices)
+        self.frozen_indices = sorted(self.frozen_indices)
 
     def _set_segmentation_flag(self):
         """
@@ -101,22 +100,22 @@ _set_master_code_length_N(self):n bits (excluding CRC).
         if self.channel_type in ('PUCCH', 'PUSCH'):
             self.A_min, self.A_max = 12, 1706
             if self.A >= 20:
-                self.crc = CRCSpec("CRC11", 0x621, 11)
+                self.crc = CRCConfig("CRC11", 11, 0, '5g')
                 self.G_min = 31
                 self.G_max = 16384 if self.segmentation else 8192
             elif 12 <= self.A <= 19:
-                self.crc = CRCSpec("CRC6", 0x21, 6)
+                self.crc = CRCConfig("CRC6", 6, 0,'5g')
                 self.G_min = 18
                 self.G_max = 8192
                 self.pc_bits = 3
                 self.pc_row_weight = 0 if (self.G - self.A <= 175) else 1 #TODO: check this condition
         elif self.channel_type == 'PDCCH':
-            self.crc = CRCSpec("CRC24", 0xB2B117, 24)
+            self.crc = CRCConfig("CRC24", 24, 1,'5g')
             self.input_bits_interleaving = True
             self.A_min, self.A_max = 1, 140
             self.G_min, self.G_max = 25, 8192
         elif self.channel_type == 'PBCH':
-            self.crc = CRCSpec("CRC24", 0xB2B117, 24)
+            self.crc = CRCConfig("CRC24", 24, 1,'5g')
             self.input_bits_interleaving = True
             self.A_min = self.A_max = 32
             self.G_min = self.G_max = 864
@@ -264,6 +263,8 @@ _set_master_code_length_N(self):n bits (excluding CRC).
         # print(f"Frozen Indices (Qf1 + Qf2 + Qf3): {self.frozen_indices}")
         
         # Calculate info_indices as the complement of frozen_indices with respect to self.reliability_indices
+        # Important note: current info_indices include parity check indices as well.
+        # Later in _get_parity_check_indices() we will remove them from info_indices.
         self.info_indices = [x for x in self.reliability_indices if x not in self.frozen_indices]
         # print(f"Information Indices (complement of frozen_indices): {self.info_indices}")
 
@@ -286,34 +287,45 @@ _set_master_code_length_N(self):n bits (excluding CRC).
             matG = np.kron(matG, matG_core)
 
         self.matG_NxN = matG                # Full NxN G matrix
-        self.matG_kxN = matG[list(sorted(self.info_indices))] # Pruned G matrix (kxN)
+
+    def _create_polar_encoder_matrix_optimized(self):
+        """
+        Creates the k-by-N polar matrix for efficient computing.
+        The matrix is pruned to include only the information, crc and parity check indices.
+        IMPORTANT: If this matrix is to be used for encoding, make sure that the pc bits are 
+        placed correctly amongst information indices based on their reliability indices.
+        """
+        self.matG_kxN = self.matG_NxN[list(sorted(self.info_indices + self.pc_indices))] # Pruned G matrix (kxN)
         
     def _get_parity_check_indices(self):
         """
         
         """
         self.row_weights = []
-        self.max_row_weight_indices = []
+        self.min_row_weight_indices = []
         if(self.pc_bits == 0):
             self.pc_indices = []
         else: # pc_bits == 3
             if(self.pc_row_weight == 1):
+                # print(f"Info indices: {self.info_indices}")
                 # Assign the two parity check bits to the next two lowest reliability indices
                 self.pc_indices = self.info_indices[-2:]
-                
-                self.row_weights = self._calculate_row_weights() # Calculate the row weights of the generator matrix
-                
-                # Find the list of indices of the max row weights
-                max_weight = max(self.row_weights)
-                # print(f"Max row weight: {max_weight}")
-                max_weight_indices = [i for i, weight in enumerate(self.row_weights) if weight == max_weight]
-                # print(f"Max row weight indices: {max_weight_indices}")
-                self.max_row_weight_indices = [sorted(self.info_indices)[i] for i in max_weight_indices]
-                # print(f"Max row weight indices (reliability): {self.max_row_weight_indices}")
-                self.max_row_weight_indices = [self.max_row_weight_indices[-1]]  # Keep only the last item
+                # print(f"pc_indices first 2: {self.pc_indices}")
+                info_indices_search_space = self.info_indices[:-3]
+                # print(f"Info indices search space: {info_indices_search_space}")
+                self.row_weights = self._calculate_row_weights(info_indices_search_space) # Calculate the row weights of the generator matrix
+                # print(f"Row weights: {self.row_weights}")
+                # Find the list of indices of the min row weights
+                min_weight = min(self.row_weights)
+                # print(f"Min row weight: {min_weight}")
+                min_weight_indices = [i for i, weight in enumerate(self.row_weights) if weight == min_weight]
+                # print(f"Min row weight indices: {min_weight_indices}")
+                self.min_row_weight_indices = [info_indices_search_space[i] for i in min_weight_indices]
+                # print(f"Min row weight indices (reliability): {self.min_row_weight_indices}")
+                self.min_row_weight_indices = [self.min_row_weight_indices[-1]]  # Keep only the last item
 
-                # Among them, find the one with the max reliability 
-                best_index = self.max_row_weight_indices[0]
+                # Among them, find the one with the min reliability 
+                best_index = self.min_row_weight_indices[0]
 
                 # Append last parity check bit to that best index
                 self.pc_indices.append(best_index)
@@ -321,16 +333,21 @@ _set_master_code_length_N(self):n bits (excluding CRC).
             else:
                 # Assign all three parity check bits to the 3 lowest reliability indices
                 self.pc_indices = self.info_indices[-3:]
+        
+        # Remove the parity check indices from the info indices
+        self.info_indices = [x for x in self.info_indices if x not in self.pc_indices]
                 
-    def _calculate_row_weights(self):
+    def _calculate_row_weights(self, info_indices_search_space):
         """
         Calculates the row weights of the generator matrix.
         Returns:
             list[int]: List of row weights for each row in the generator matrix.
         """
         # Calculate the row weights based on the generator matrix
-        row_weights = np.sum(self.matG_kxN, axis=1)
-        return row_weights
+        row_weights = np.sum(self.matG_NxN, axis=1)
+        print("Row Weights:")
+        print(row_weights)
+        return [row_weights[i] for i in info_indices_search_space]
 
     def _get_channel_interleaver_indices(self):
         """
@@ -355,8 +372,8 @@ _set_master_code_length_N(self):n bits (excluding CRC).
                 index += 1
             if index >= self.E:  # Break the outer loop as well
                 break
-        print("Channel interleaver matrix:")
-        print(self.matrix.tolist())
+        # print("Channel interleaver matrix:")
+        # print(self.matrix.tolist())
         # Read the indices column-wise
         self.channel_interleaver_indices = [x for x in self.matrix.T.flatten() if x != -1]
 
@@ -440,3 +457,22 @@ _set_master_code_length_N(self):n bits (excluding CRC).
                 "length": self.crc.length,
             },
         }
+    
+    def _generate_pucch_encoder_config(self) -> PUCCHConfig:
+        return PUCCHConfig(
+            A=self.A,
+            K=self.K,
+            N=self.N,
+            E=self.E,
+            G=self.G,
+            # Abar = self.Abar,
+            rm=self.rm,
+            seg = self.segmentation,
+            crc_config=self.crc,
+            pc_indices = self.pc_indices,
+            info_indices= self.info_indices,
+            frozen_indices= self.frozen_indices,
+            channel_interleaved_indices = self.channel_interleaver_indices,
+            Gmat_kxN = self.matG_kxN,
+            # ...
+        )
