@@ -1,4 +1,4 @@
-def get_pc_bits(input_bits, N):
+def assign_pc_bits(input_bits, N):
     """
     Returns the values of PC bits.
 

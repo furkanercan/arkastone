@@ -22,6 +22,4 @@ def concatenate_code_blocks(blocks: list[list[int]], G: int) -> list[int]:
     else:
         raise ValueError("Only up to 2 code blocks supported.")
 
-    
-
     return tb

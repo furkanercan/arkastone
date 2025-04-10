@@ -1,6 +1,6 @@
 import math
 
-def subchannel_allocation(input_bits, info_indices, output_bits):
+def subchannel_allocation(input_bits, info_indices, pc_indices, output_bits):
     """
     Map the input bits to the output bits based on the provided information indices.
     The output_bits list must be passed as an argument and initialized to zeros with length N.
@@ -15,3 +15,7 @@ def subchannel_allocation(input_bits, info_indices, output_bits):
     """
     for i, index in enumerate(info_indices):
         output_bits[index] = input_bits[i]
+    
+    for i, index in enumerate(pc_indices):
+        output_bits[index] = pc_indices[i]
+    
