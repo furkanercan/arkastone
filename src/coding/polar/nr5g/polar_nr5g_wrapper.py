@@ -345,8 +345,8 @@ _set_master_code_length_N(self):n bits (excluding CRC).
         """
         # Calculate the row weights based on the generator matrix
         row_weights = np.sum(self.matG_NxN, axis=1)
-        print("Row Weights:")
-        print(row_weights)
+        # print("Row Weights:")
+        # print(row_weights)
         return [row_weights[i] for i in info_indices_search_space]
 
     def _get_channel_interleaver_indices(self):
