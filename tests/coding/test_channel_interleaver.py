@@ -1,5 +1,5 @@
 import pytest
-from src.coding.polar.nr5g.components.channel_interleaver import channel_interleaver
+from src.tx.nr5g.polar.components.channel_interleaver import channel_interleaver
 
 def test_channel_interleaver_basic():
     input_bits = [1, 0, 1, 1, 0]

@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from src.coding.polar.nr5g.components.polar_encoder_core import polar_encode
+from src.tx.nr5g.polar.components.polar_encoder_core import polar_encode
 
 @pytest.mark.parametrize("gmat_file, uncoded_file, encoded_file", [
     ("tests/coding/resources/polar_encoder_core/gmat_64x128/Gmat.csv", 

@@ -1,5 +1,5 @@
 import pytest
-from src.coding.polar.nr5g.components.rate_matching import rate_matching
+from src.tx.nr5g.polar.components.rate_matching import rate_matching
 
 def test_rate_matching_puncturing():
     input_bits = [1, 0, 1, 1, 0, 0, 1]

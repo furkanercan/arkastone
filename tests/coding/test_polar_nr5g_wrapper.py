@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from src.coding.polar.nr5g.polar_nr5g_wrapper import PolarNR5GWrapper
+from src.tx.nr5g.polar.polar_nr5g_wrapper import PolarNR5GWrapper
 
 
 @pytest.mark.parametrize("A, G, channel_type, expected_segmentation", [

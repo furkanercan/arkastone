@@ -1,6 +1,6 @@
 import pytest
 import random
-from src.coding.polar.nr5g.components.subblock_interleaver import subblock_interleaver
+from src.tx.nr5g.polar.components.subblock_interleaver import subblock_interleaver
 
 @pytest.mark.parametrize("N", [32, 64, 128, 256, 512])
 def test_subblock_interleaver(N):

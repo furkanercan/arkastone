@@ -1,4 +1,4 @@
-from src.coding.polar.nr5g.components.rnti_scrambling import *
+from src.tx.nr5g.polar.components.rnti_scrambling import *
 
 def test_rnti_scrambling():
     crc = [0] * 24
