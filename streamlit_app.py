@@ -1,6 +1,7 @@
 import streamlit as st
 from src.interface.runner import run_polar_sim_with_len_k
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 # Add a logo with reduced size
 st.image("assets/arkastone_logo_transparent.png", width=200)
@@ -135,20 +136,59 @@ if choice == "simulate a 5G polar code":
         with st.expander("📟 Terminal Output", expanded=False):
             st.code(terminal_log, language="text")
 
-        # Plot results
+        # Extract results for plotting
         snrs = [r["snr"] for r in results]
         bers = [r["ber"] for r in results]
         fers = [r["fer"] for r in results]
 
+        # Plot results using Plotly
         st.subheader("BER/FER vs SNR")
-        fig, ax = plt.subplots()
-        ax.plot(snrs, bers, label="BER", marker="o")
-        ax.plot(snrs, fers, label="FER", marker="x")
-        ax.set_xlabel("SNR (dB)")
-        ax.set_ylabel("Error Rate")
-        ax.set_yscale("log")
-        ax.legend()
-        st.pyplot(fig)
+
+        # Create a Plotly figure
+        fig = go.Figure()
+
+        # Create a Plotly figure
+        fig = go.Figure()
+
+        # Add BER trace
+        fig.add_trace(go.Scatter(
+            x=snrs,
+            y=bers,
+            mode='lines+markers',
+            name='BER',
+            marker=dict(symbol='circle', size=8),
+            line=dict(width=2)
+        ))
+
+        # Add FER trace
+        fig.add_trace(go.Scatter(
+            x=snrs,
+            y=fers,
+            mode='lines+markers',
+            name='FER',
+            marker=dict(symbol='x', size=8),
+            line=dict(width=2)
+        ))
+
+        # Update layout
+        fig.update_layout(
+            title="BER/FER vs SNR",
+            xaxis_title="SNR (dB)",
+            yaxis_title="Error Rate",
+            yaxis_type="log",  # Set y-axis to logarithmic scale
+            template="plotly_white",
+            legend=dict(
+                title="Legend",
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            )
+        )
+
+        # Render the Plotly chart in Streamlit
+        st.plotly_chart(fig, use_container_width=True)
 
         # Table
         st.subheader("Simulation Results")
