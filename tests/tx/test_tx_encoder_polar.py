@@ -25,6 +25,15 @@ def test_polar_encoder():
                 "bits_intl": 6,
                 "bits_frac": 1
             },
+            "fast_enable": True,
+            "fast_max_size": {
+                "rate0": 1024,
+                "rate1": 1024,
+                "rep": 1024,
+                "spc": 1024,
+                "ml_0011": 0,
+                "ml_0101": 0
+            }
         }
     }
 
