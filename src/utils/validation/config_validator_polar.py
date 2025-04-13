@@ -15,7 +15,7 @@ def validate_config_polar(config):
         "crc": dict,      # Delegate to `validate_crc_config`
         "decoder": dict,  # Delegate to `validate_decoder_config`
         "quantize": dict,    # Delegate to `validate_quant_config`
-        "fast_enable": dict, # Delegate to `fast enable`
+        "fast_enable": bool, # Delegate to `fast enable`
         "fast_max_size": dict # Delegate to `fast max size`
     }
 
@@ -102,24 +102,23 @@ def validate_config_polar_quantize(config):
     return config
 
 
-
-
 def validate_config_polar_fast_enable(config):
+    """
+    Validates the 'fast_enable' configuration. If the input is a boolean, it is returned directly.
+    Otherwise, it validates the dictionary structure.
+    """
+    if isinstance(config, bool):
+        # If config is a boolean, return it directly
+        return config
 
-    optional_keys = {
-        "rate0": (bool, False),
-        "rate1": (bool, False),
-        "rep": (bool, False),
-        "spc": (bool, False),
-        "ml_0101": (bool, False),
-        "ml_0011": (bool, False)
-    }
+    # # If config is a dictionary, validate its keys
+    # required_keys = {
+    #     "enable": bool
+    # }
 
-    validate_optional_keys(config, optional_keys, "polar.fast_enable")
+    # validate_required_keys(config, required_keys, "polar.fast_enable")
 
     return config
-
-
 
 
 def validate_config_polar_fast_max_size(config, enabled):
@@ -136,15 +135,16 @@ def validate_config_polar_fast_max_size(config, enabled):
     # Further validate only if the corresponding fast_enable key is True
     for key, value in config.items():
         if key in optional_keys:
-            if enabled.get(key, False):  # Check if the corresponding fast_enable key is True
-                if value < 4:
-                    raise ValueError(
-                        f"'polar.fast_max_size.{key}' ({value}) must be at least 4."
-                    )
-                if not (value & (value - 1)) == 0:
-                    raise ValueError(
-                        f"'polar.fast_max_size.{key}' ({value}) must be a power of 2."
-                    )
+            if (enabled == True):  # Check if the corresponding fast_enable key is True
+                if value != 0:
+                    if value < 4:
+                        raise ValueError(
+                            f"'polar.fast_max_size.{key}' ({value}) must be at least 4."
+                        )
+                    if not (value & (value - 1)) == 0:
+                        raise ValueError(
+                            f"'polar.fast_max_size.{key}' ({value}) must be a power of 2."
+                        )
             else:
                 # Skip validation if fast_enable[key] is False
                 config[key] = optional_keys[key][1]  # Assign the default value silently
