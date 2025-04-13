@@ -1,6 +1,6 @@
 import csv
 import pytest
-from src.coding.polar.nr5g.polar_nr5g_wrapper import PolarNR5GWrapper
+from src.tx.nr5g.polar.polar_nr5g_wrapper import PolarNR5GWrapper
 
 # Mapping of rate matching codes in the CSV to their full names
 RATE_MATCHING_MAP = {

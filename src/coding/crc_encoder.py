@@ -1,6 +1,6 @@
 import numpy as np
 from typing import List
-from src.coding.polar.nr5g.config.crc_config import CRCConfig
+from src.tx.nr5g.polar.config.crc_config import CRCConfig
 
 class CRCEncoder:
     def __init__(self, config: CRCConfig):

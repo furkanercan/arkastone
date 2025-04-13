@@ -1,15 +1,15 @@
 import numpy as np
 from typing import List
-from src.coding.polar.nr5g.config.pucch_config import PUCCHConfig
+from src.tx.nr5g.polar.config.pucch_config import PUCCHConfig
 from src.coding.crc_encoder import CRCEncoder
-from src.coding.polar.nr5g.components.code_block_segmentation import segment_transport_block
-from src.coding.polar.nr5g.components.subchannel_allocation import subchannel_allocation
-from src.coding.polar.nr5g.components.pc_bit_generation import assign_pc_bits
-from src.coding.polar.nr5g.components.polar_encoder_core import polar_encode
-from src.coding.polar.nr5g.components.subblock_interleaver import subblock_interleaver
-from src.coding.polar.nr5g.components.rate_matching import rate_matching
-from src.coding.polar.nr5g.components.channel_interleaver import channel_interleaver
-from src.coding.polar.nr5g.components.code_block_concatenation import concatenate_code_blocks
+from src.tx.nr5g.polar.components.code_block_segmentation import segment_transport_block
+from src.tx.nr5g.polar.components.subchannel_allocation import subchannel_allocation
+from src.tx.nr5g.polar.components.pc_bit_generation import assign_pc_bits
+from src.tx.nr5g.polar.components.polar_encoder_core import polar_encode
+from src.tx.nr5g.polar.components.subblock_interleaver import subblock_interleaver
+from src.tx.nr5g.polar.components.rate_matching import rate_matching
+from src.tx.nr5g.polar.components.channel_interleaver import channel_interleaver
+from src.tx.nr5g.polar.components.code_block_concatenation import concatenate_code_blocks
 
 # TODO: May add other classes for some of the methods later - specifically have polar encoder in mind
 

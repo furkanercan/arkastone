@@ -1,6 +1,6 @@
 import pytest
 from src.coding.crc_encoder import CRCEncoder
-from src.coding.polar.nr5g.config.crc_config import CRCConfig
+from src.tx.nr5g.polar.config.crc_config import CRCConfig
 
 # Source for obtaining CRC polynomials and test vectors:
 # https://www.ghsi.de/pages/subpages/Online%20CRC%20Calculation/
