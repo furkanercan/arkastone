@@ -121,6 +121,15 @@ def run_polar_sim_with_len_k(
                     time_end = time.time()
                     time_elapsed = time_end - time_start
                     sim.update_run_results(idx, len_k)
+                    res = sim.get_ber_results(idx, len_k)
+                    res.update({"snr": snr_point[idx], "time": format_time(time_elapsed)})
+                    if idx < len(results):
+                        results[idx] = res
+                    else:
+                        results.append(res)
+
+                    # Yield intermediate results
+                    yield results, terminal_output.getvalue()
 
             time_end = time.time()
             time_elapsed = time_end - time_start
@@ -130,6 +139,10 @@ def run_polar_sim_with_len_k(
             res = sim.get_ber_results(idx, len_k)
             res.update({"snr": snr_point[idx], "time": format_time(time_elapsed)})
             results.append(res)
+            # results[idx] = res # update the existing entry instead of appending
+
+            # Yield final results for this SNR point
+            yield results, terminal_output.getvalue()
 
     output_text = terminal_output.getvalue()
-    return results, output_text
+    yield results, output_text

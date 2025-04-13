@@ -2,6 +2,7 @@ import streamlit as st
 from src.interface.runner import run_polar_sim_with_len_k
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+import time
 
 # Add a logo with reduced size
 st.image("assets/arkastone_logo_transparent.png", width=200)
@@ -93,20 +94,16 @@ if choice == "simulate a 5G polar code":
     # Run Button
     if st.button("Run Configuration"):
         with st.spinner("Running simulation..."):
-            # Pass the advanced configuration parameters to the simulation function
-            print("Running simulation with the following parameters:")
-            print(f"len_N: {len_N}, len_k: {len_k}, seed: {seed}")
-            print(f"save_output: {save_output}, decoder_algorithm: {decoder_algorithm}")
-            print(f"crc_enable: {crc_enable}, crc_length: {crc_length}")
-            print(f"quantize_enable: {quantize_enable}, bits_chnl: {bits_chnl}")
-            print(f"bits_intl: {bits_intl}, bits_frac: {bits_frac}")
-            print(f"modulation_type: {modulation_type}, demod_type: {demod_type}")
-            print(f"num_subcarriers: {num_subcarriers}, cyclic_prefix_length: {cyclic_prefix_length}")
-            print(f"channel_type: {channel_type}, snr_start: {snr_start}")
-            print(f"snr_end: {snr_end}, snr_step: {snr_step}")
-            print(f"num_frames: {num_frames}, num_errors: {num_errors}, max_frames: {max_frames}")
-            
-            results, terminal_log = run_polar_sim_with_len_k(
+            # Create placeholders for dynamic updates
+            terminal_output_placeholder = st.empty()
+            plot_placeholder = st.empty()
+            table_placeholder = st.empty()
+
+            # Initialize a variable to track the length of results
+            previous_results_length = 0
+
+            # Poll for results
+            for results, terminal_log in run_polar_sim_with_len_k(
                 "configs/config_polar.json5",
                 len_N,
                 len_k,
@@ -130,80 +127,76 @@ if choice == "simulate a 5G polar code":
                 num_frames,
                 num_errors,
                 max_frames
-            )
+            ):
+                # Check if there are updates (every 3 seconds or when results are updated)
+                if time.time() % 3 < 1 or len(results) != previous_results_length:
 
-        # Show terminal log in expandable box
-        with st.expander("📟 Terminal Output", expanded=False):
-            st.code(terminal_log, language="text")
+                    # Update the previous results length
+                    previous_results_length = len(results)
 
-        # Extract results for plotting
-        snrs = [r["snr"] for r in results]
-        bers = [r["ber"] for r in results]
-        fers = [r["fer"] for r in results]
+                    # Update terminal log
+                    terminal_output_placeholder.expander("📟 Terminal Output", expanded=False).code(terminal_log, language="text")
 
-        # Plot results using Plotly
-        st.subheader("BER/FER vs SNR")
+                    # Extract results for plotting
+                    snrs = [r["snr"] for r in results]
+                    bers = [r["ber"] for r in results]
+                    fers = [r["fer"] for r in results]
 
-        # Create a Plotly figure
-        fig = go.Figure()
+                    # Check if BER or FER is 0
+                    if (bers[-1] == 0):
+                        # Only update the results table
+                        table_placeholder.table(results)
+                        continue
 
-        # Create a Plotly figure
-        fig = go.Figure()
+                    # Create a new Plotly figure for each iteration
+                    fig = go.Figure()
 
-        # Add BER trace
-        fig.add_trace(go.Scatter(
-            x=snrs,
-            y=bers,
-            mode='lines+markers',
-            name='BER',
-            marker=dict(symbol='circle', size=8),
-            line=dict(width=2)
-        ))
+                    # Add BER trace
+                    fig.add_trace(go.Scatter(
+                        x=snrs,
+                        y=bers,
+                        mode='lines+markers',
+                        name='BER',
+                        marker=dict(symbol='circle', size=8),
+                        line=dict(width=2)
+                    ))
 
-        # Add FER trace
-        fig.add_trace(go.Scatter(
-            x=snrs,
-            y=fers,
-            mode='lines+markers',
-            name='FER',
-            marker=dict(symbol='x', size=8),
-            line=dict(width=2)
-        ))
+                    # Add FER trace
+                    fig.add_trace(go.Scatter(
+                        x=snrs,
+                        y=fers,
+                        mode='lines+markers',
+                        name='FER',
+                        marker=dict(symbol='x', size=8),
+                        line=dict(width=2)
+                    ))
 
-        # Update layout
-        fig.update_layout(
-            title="BER/FER vs SNR",
-            xaxis_title="SNR (dB)",
-            yaxis_title="Error Rate",
-            yaxis_type="log",  # Set y-axis to logarithmic scale
-            template="plotly_white",
-            legend=dict(
-                title="Legend",
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1
-            )
-        )
+                    # Update layout
+                    fig.update_layout(
+                        title="BER/FER vs SNR",
+                        xaxis_title="SNR (dB)",
+                        yaxis_title="Error Rate",
+                        yaxis_type="log",
+                        template="plotly_white",
+                        legend=dict(
+                            title="Legend",
+                            orientation="h",
+                            yanchor="bottom",
+                            y=1.02,
+                            xanchor="right",
+                            x=1
+                        )
+                    )
 
-        # Render the Plotly chart in Streamlit
-        st.plotly_chart(fig, use_container_width=True)
+                    # Refresh the placeholder with the updated figure
+                    with plot_placeholder.container():
+                        unique_key = f"plot_{time.time()}"  # Use the current timestamp for uniqueness
+                        st.plotly_chart(fig, use_container_width=True, key=unique_key)
 
-        # Table
-        st.subheader("Simulation Results")
-        st.table(results)
+                    # Update results table
+                    table_placeholder.table(results)
 
-        if save_output:
-            output_dir = results[0].get("output_dir", None)
-            if output_dir:
-                output_file_path = f"{output_dir}/results.txt"
-                st.success(f"Output successfully saved to: `{output_file_path}`")
-                with open(output_file_path, "r") as f:
-                    file_contents = f.read()
-                st.download_button(label="Download Results File", data=file_contents, file_name="results.txt", mime="text/plain")
-            else:
-                st.warning("Simulation finished, but output file path is not available.")
+            st.success("Simulation completed!")
 elif choice == "simulate a 5G PUCCH PHY sequence":
     st.subheader("PUCCH PHY Sequence Simulation")
     st.markdown("This feature is under development. Stay tuned!")
