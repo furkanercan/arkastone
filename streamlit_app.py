@@ -32,6 +32,12 @@ if choice == "simulate a 5G polar code":
     len_N = st.sidebar.number_input("Set 5G Polar Code Length", min_value=16, max_value=4096, value=1024, step=16)
     len_k = st.sidebar.number_input("Set Polar Code len_k", min_value=8, max_value=2048, value=512, step=8)
     decoder_algorithm = st.sidebar.selectbox("Decoder Algorithm", options=["SC", "SCL", "SCFlip"], index=0)
+    list_size = None  # Default to None if not applicable
+    scf_iters = None  # Default to None if not applicable
+    if decoder_algorithm == "SCL":
+        list_size = st.sidebar.number_input("List Size for SCL", min_value=1, max_value=64, value=8, step=1)
+    elif decoder_algorithm == "SCFlip":
+        scf_iters = st.sidebar.number_input("SCFlip Iterations", min_value=1, max_value=200, value=10, step=1)
     crc_enable = st.sidebar.checkbox("Enable CRC", value=False)
     crc_length = st.sidebar.number_input("CRC Length", min_value=0, max_value=32, value=8, step=1, disabled=not crc_enable)
 
@@ -129,7 +135,7 @@ if choice == "simulate a 5G polar code":
                 max_frames
             ):
                 # Check if there are updates (every 3 seconds or when results are updated)
-                if time.time() % 3 < 1 or len(results) != previous_results_length:
+                if time.time() % 3 < 0.5 or len(results) != previous_results_length:
 
                     # Update the previous results length
                     previous_results_length = len(results)
