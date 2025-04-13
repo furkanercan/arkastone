@@ -13,6 +13,7 @@ class PolarDecoder_SC():
         self.vec_dec_sch_size = []
         self.vec_dec_sch_depth = []
         self.vec_dec_sch_dir = []
+        self.info_indices = code.info_indices
         self.qtz_enable = code.qtz_enable
         self.qtz_int_max = code.qtz_int_max
         self.qtz_int_min = code.qtz_int_min
@@ -24,6 +25,21 @@ class PolarDecoder_SC():
         self.nodesize_spc     = code.nodesize_spc     if self.fast_enable else 0
         self.nodesize_ml_0011 = code.nodesize_ml_0011 if self.fast_enable else 0
         self.nodesize_ml_0101 = code.nodesize_ml_0101 if self.fast_enable else 0
+        self.create_Gmat_NxN()
+
+    def create_Gmat_NxN(self):
+        """
+        Creates the polar matrices:
+            - matG_NxN: The generator matrix in N-by-N form.
+        Raises:
+            TypeError: If len_logn is not a positive integer.
+        """
+        matG_core = np.array([[1, 0], [1, 1]])
+        matG = matG_core  # Core matrix as the initial value
+        for _ in range(self.len_logn-1):
+            matG = np.kron(matG, matG_core)
+
+        self.matG_NxN = matG                # Full NxN G matrix
 
     def initialize_decoder(self):
         if not self.vec_dec_sch:
@@ -38,12 +54,26 @@ class PolarDecoder_SC():
 
     def create_decoding_schedule(self):
         sch_limit = self.len_logn
-        vec_dec_sch_init = ['F', 'H', 'G', 'H', 'C']
+        vec_dec_sch_init = ['F', 'H', 'G', 'H', 'C'] # Core scheduling
         self.vec_dec_sch = []
+        # Create initial decoding schedule (F, H, G, H, C)
         self.call_decoding_schedule(vec_dec_sch_init, sch_limit)
+        # Embed frozen and info indices to the schedule: H -> R0/R1
         self.embed_frozen_nodes()
+        # if(self.fast_enable): #If Fast-SSC is enabled
+            # Create key special nodes of length 2: (R0, R1 and REP only)
+            # vec_dec_sch_fast = self.create_key_special_nodes()
+        self.create_key_special_nodes()
         self.create_decoding_stages()
-        self.create_decoding_direction()
+            # self.create_special_nodes(vec_dec_sch_fast)
+            # self.create_decoding_direction_fast(vec_dec_sch_fast)
+        self.create_special_nodes()
+        self.create_decoding_direction_fast()
+            # self.vec_dec_sch = vec_dec_sch_fast
+            # self.create_decoding_direction()
+        # else:
+        #     self.create_decoding_stages()
+        #     self.create_decoding_direction()
 
 
     def call_decoding_schedule(self, base_vector, sch_limit):
@@ -104,8 +134,131 @@ class PolarDecoder_SC():
         
         self.vec_dec_sch_dir = sc_direction
 
+    def create_key_special_nodes(self):
+        i = 0
+        vec_dec_sch_fast = []
+        while i < len(self.vec_dec_sch):
+            pattern = ''.join(self.vec_dec_sch[i:i+5])
+
+            if (pattern == "FR0GR0C" and self.nodesize_rate0 >= 4):  
+                vec_dec_sch_fast.append("R0")
+                i += 4
+            elif (pattern == "FR1GR1C" and self.nodesize_rate1 >= 4): 
+                vec_dec_sch_fast.append("R1")
+                i += 4
+            elif (pattern == "FR0GR1C" and self.nodesize_rep >= 4): 
+                vec_dec_sch_fast.append("REP")
+                i += 4
+            else:
+                vec_dec_sch_fast.append(self.vec_dec_sch[i])
+            i += 1
+        # return vec_dec_sch_fast
+        self.vec_dec_sch = vec_dec_sch_fast
+
+    def create_special_nodes(self):
+        iterator_schedule = list(self.vec_dec_sch)
+        self.vec_dec_sch.clear()
+
+        iterator_stagesize = list(self.vec_dec_sch_size)
+        self.vec_dec_sch_size.clear()
+
+        iterator_stageidx = list(self.vec_dec_sch_depth)
+        self.vec_dec_sch_depth.clear()
+
+        i = 0
+        while i < len(iterator_schedule):
+            pattern = ''.join(iterator_schedule[i:i+5])
+
+            self.vec_dec_sch_size.append(iterator_stagesize[i])
+            self.vec_dec_sch_depth.append(iterator_stageidx[i])
+
+            if pattern == "FR0GREPC" and self.nodesize_rep >= 4:
+                self.vec_dec_sch.append("REP")
+                i += 4
+            elif pattern == "FR0GR0C" and self.nodesize_rate0 >= 4:
+                self.vec_dec_sch.append("R0")
+                i += 4
+            elif pattern == "FR1GR1C" and self.nodesize_rate1 >= 4:
+                self.vec_dec_sch.append("R1")
+                i += 4
+            elif pattern == "FREPGR1C" and self.nodesize_spc >= 4:
+                self.vec_dec_sch.append("SPC")
+                i += 4
+            elif pattern == "FR0GR1C" and self.nodesize_ml_0011 == 4:
+                self.vec_dec_sch.append("ML_0011")
+                i += 4
+            elif pattern == "FREPGREPC" and self.nodesize_ml_0101 == 4:
+                self.vec_dec_sch.append("ML_0101")
+                i += 4
+            else:
+                self.vec_dec_sch.append(iterator_schedule[i])
+
+            i += 1
+
+        there_is_still_hope = True
+
+        while there_is_still_hope:
+            istherehope = False
+
+            iterator_schedule = list(self.vec_dec_sch)
+            self.vec_dec_sch.clear()
+
+            iterator_stagesize = list(self.vec_dec_sch_size)
+            self.vec_dec_sch_size.clear()
+
+            iterator_stageidx = list(self.vec_dec_sch_depth)
+            self.vec_dec_sch_depth.clear()
+
+            i = 0
+            while i < len(iterator_schedule):
+                pattern = ''.join(iterator_schedule[i:i+5])
+
+                self.vec_dec_sch_size.append(iterator_stagesize[i])
+                self.vec_dec_sch_depth.append(iterator_stageidx[i])
+
+                if pattern == "FR0GREPC" and self.nodesize_rep >= iterator_stagesize[i]:
+                    self.vec_dec_sch.append("REP")
+                    i += 4
+                    istherehope = True
+                elif pattern == "FR0GR0C" and self.nodesize_rate0 >= iterator_stagesize[i]:
+                    self.vec_dec_sch.append("R0")
+                    i += 4
+                    istherehope = True
+                elif pattern == "FSPCGR1C" and self.nodesize_spc >= iterator_stagesize[i]:
+                    self.vec_dec_sch.append("SPC")
+                    i += 4
+                    istherehope = True
+                elif pattern == "FR1GR1C" and self.nodesize_rate1 >= iterator_stagesize[i]:
+                    self.vec_dec_sch.append("R1")
+                    i += 4
+                    istherehope = True
+                else:
+                    self.vec_dec_sch.append(iterator_schedule[i])
+
+                i += 1
+
+            if not istherehope:
+                there_is_still_hope = False
+
+    def create_decoding_direction_fast(self):
+        
+        self.vec_dec_sch_dir = []
+        directionStack = [0]
+
+        for iteration, item in enumerate(self.vec_dec_sch):
+            if item == "F":
+                directionStack.append(0)
+                self.vec_dec_sch_dir.append(0)
+            elif item == "G":
+                directionStack.append(1)
+                self.vec_dec_sch_dir.append(1)
+            elif self.isLeaf(item) or item == "C":
+                self.vec_dec_sch_dir.append(directionStack.pop())
+        
+        return self.vec_dec_sch_dir
+
     def isLeaf(self, node):
-        return node == 'R0' or node == 'R1'
+        return node == 'R0' or node == 'R1' or node == 'REP' or node == 'SPC' or node == 'ML_0011' or node == 'ML_0101'
     
     def dec_sc_f(self, stage_size, stage_depth, is_quantized, max_value):
         # if self.use_optimized:
@@ -229,10 +382,49 @@ class PolarDecoder_SC():
         else:
             self.mem_beta_r[0][0] = 1 if llr < 0 else 0
 
+    def dec_fastssc_r0(self, stage_depth, stage_dir):
+        if stage_dir == 0:
+            self.mem_beta_l[stage_depth][:] = 0
+        else:
+            self.mem_beta_r[stage_depth][:] = 0
+
+    def dec_fastssc_rep(self, stage_depth, sch_dir):
+        rep_sum = np.sum(self.mem_alpha[stage_depth][:])
+        rep_sgn = rep_sum < 0
+        if sch_dir == 0:
+            self.mem_beta_l[stage_depth][:] = rep_sgn
+        else:
+            self.mem_beta_r[stage_depth][:] = rep_sgn
+
+    def dec_fastssc_r1(self, stage_depth, sch_dir):
+        if sch_dir == 0:
+            self.mem_beta_l[stage_depth][:] = np.where(self.mem_alpha[stage_depth][:] < 0, 1, 0)
+        else:
+            self.mem_beta_r[stage_depth][:] = np.where(self.mem_alpha[stage_depth][:] < 0, 1, 0)
+
+    def dec_fastssc_spc(self, stage_depth, sch_dir):
+        hard_decisions = np.where(self.mem_alpha[stage_depth] < 0, 1, 0)
+        parity = np.sum(hard_decisions) % 2 == 1
+
+        if parity:
+            min_entry_index = np.argmin(np.abs(self.mem_alpha[stage_depth][:]))
+            hard_decisions[min_entry_index] ^= 1
+
+        if sch_dir == 0:
+            self.mem_beta_l[stage_depth][:] = hard_decisions
+        else:
+            self.mem_beta_r[stage_depth][:] = hard_decisions
 
     def dec_sc(self, vec_decoded, vec_llr):
+        """
+        Perform the decoding process using the SC algorithm.
+        Args:
+            vec_decoded (np.ndarray): The decoded bits.
+            vec_llr (np.ndarray): The log-likelihood ratios.
+            matG_full (np.ndarray): The full generator matrix.
+            vec_polar_info_indices (np.ndarray): The information bit indices.
+        """
         self.mem_alpha[self.len_logn][:] = vec_llr # Place LLRs to bottom row of mem_alpha
-        info_ctr = 0
         for i in range(len(self.vec_dec_sch)):
             if self.vec_dec_sch[i] == 'F':
                 self.dec_sc_f(self.vec_dec_sch_size[i], self.vec_dec_sch_depth[i], self.qtz_enable, self.qtz_int_max)
@@ -241,19 +433,15 @@ class PolarDecoder_SC():
             elif self.vec_dec_sch[i] == 'C':
                 self.dec_sc_c(self.vec_dec_sch_size[i], self.vec_dec_sch_depth[i], self.vec_dec_sch_dir[i])
             elif self.vec_dec_sch[i] == 'R0':
-                if(self.vec_dec_sch_dir[i] == 0):
-                    self.mem_beta_l[0][0] = 0
-                else:
-                    self.mem_beta_r[0][0] = 0
+                self.dec_fastssc_r0(self.vec_dec_sch_depth[i], self.vec_dec_sch_dir[i])
+            elif self.vec_dec_sch[i] == 'REP':
+                self.dec_fastssc_rep(self.vec_dec_sch_depth[i], self.vec_dec_sch_dir[i])
             elif self.vec_dec_sch[i] == 'R1':
-                self.dec_sc_h(self.mem_alpha[0][0], self.vec_dec_sch_dir[i])
-                if(self.vec_dec_sch_dir[i] == 0):
-                    # vec_decoded.append(self.mem_beta_l[0][0]) # May revert to POCO style if too slow.
-                    vec_decoded[info_ctr] = self.mem_beta_l[0][0]
-                else:
-                    # vec_decoded.append(self.mem_beta_r[0][0])
-                    vec_decoded[info_ctr] = self.mem_beta_r[0][0]
-                info_ctr += 1
+                self.dec_fastssc_r1(self.vec_dec_sch_depth[i], self.vec_dec_sch_dir[i])
+            elif self.vec_dec_sch[i] == 'SPC':
+                self.dec_fastssc_spc(self.vec_dec_sch_depth[i], self.vec_dec_sch_dir[i])
+
+        vec_decoded[:] = ((self.mem_beta_l[self.len_logn] @ self.matG_NxN) % 2)[self.info_indices]
     
     from numba import njit
 
