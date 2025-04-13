@@ -44,6 +44,7 @@ for idx, (stdev, var) in enumerate(zip(channel.stdev, channel.variance)):
     snr_point = config["channel"]["snr"]["simpoints"]
     while(sim.run_simulation(idx)):
         info_data[:] = np.random.randint(0, 2, size=len_k)
+        # info_data[:] = np.zeros(len_k, dtype=np.int32)
         transmitter.tx_chain(info_data)
         received_data = channel.apply_awgn(transmitter.transmitted_data, stdev, var)
         receiver.rx_chain(received_data, var)
