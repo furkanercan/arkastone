@@ -17,6 +17,13 @@ class PolarDecoder_SC():
         self.qtz_int_max = code.qtz_int_max
         self.qtz_int_min = code.qtz_int_min
         self.use_optimized = 1
+        self.fast_enable = code.fast_enable
+        self.nodesize_rate0   = code.nodesize_rate0   if self.fast_enable else 0
+        self.nodesize_rate1   = code.nodesize_rate1   if self.fast_enable else 0
+        self.nodesize_rep     = code.nodesize_rep     if self.fast_enable else 0
+        self.nodesize_spc     = code.nodesize_spc     if self.fast_enable else 0
+        self.nodesize_ml_0011 = code.nodesize_ml_0011 if self.fast_enable else 0
+        self.nodesize_ml_0101 = code.nodesize_ml_0101 if self.fast_enable else 0
 
     def initialize_decoder(self):
         if not self.vec_dec_sch:

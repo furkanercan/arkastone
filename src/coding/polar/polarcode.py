@@ -20,6 +20,14 @@ class PolarCode:
         self.qtz_int_max         = config["polar"]["quantize"]["intl_max"]
         self.qtz_int_min         = config["polar"]["quantize"]["intl_min"]
 
+        self.fast_enable         = config["polar"]["fast_enable"]
+        self.nodesize_rate0      = config["polar"]["fast_max_size"]["rate0"]
+        self.nodesize_rate1      = config["polar"]["fast_max_size"]["rate1"]
+        self.nodesize_rep        = config["polar"]["fast_max_size"]["rep"]
+        self.nodesize_spc        = config["polar"]["fast_max_size"]["spc"]
+        self.nodesize_ml_0011    = config["polar"]["fast_max_size"]["ml_0011"]
+        self.nodesize_ml_0101    = config["polar"]["fast_max_size"]["ml_0101"]
+
         self.frozen_bits, self.info_indices = self.create_polar_indices()
 
 
