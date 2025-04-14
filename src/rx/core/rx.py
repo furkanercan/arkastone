@@ -1,9 +1,9 @@
 import numpy as np
 import math
 from src.rx.decoders.decoder import Decoder
-from src.rx.demodulator import Demodulator
+from src.rx.core.demodulator import Demodulator
 from src.common.ofdm import OFDM
-from src.rx.rx_ofdm import OFDMReceiver
+from src.rx.core.rx_ofdm import OFDMReceiver
 
 class Receiver:
     def __init__(self, mod_config, ofdm_config, code):

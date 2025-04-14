@@ -8,8 +8,8 @@ from src.utils.output_handler import *
 from src.utils.create_run_id import *
 from src.utils.timekeeper import *
 
-from src.tx.modulator import Modulator
-from src.rx.demodulator import Demodulator
+from src.tx.core.modulator import Modulator
+from src.rx.core.demodulator import Demodulator
 
 def main_test_mod_demod(config_file):
     """

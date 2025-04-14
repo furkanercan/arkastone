@@ -91,6 +91,21 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+
+## 🔁 Profile your code interactively
+
+Run the code in your virtual environment with options:
+-m cProfile -o profile.out
+```bash
+/home/furkan/Documents/communications_project/.venv/bin/python -m cProfile -o profile.out /home/furkan/Documents/communications_project/examples/tx_rx_chain_example_polar.py
+```
+Visualize:
+```bash
+snakeviz profile.out
+```
+
+
+
 ---
 
 Happy coding! ⚡

@@ -3,7 +3,7 @@ import random
 from src.channel.awgn import ChannelAWGN
 from src.utils.validation.config_validator import validate_config_channel
 
-from src.tx.modulator import Modulator
+from src.tx.core.modulator import Modulator
 from src.utils.validation.config_validator import validate_config_modulator
 
 def test_awgn_channel_real():
@@ -63,7 +63,7 @@ def test_awgn_channel_complex():
         validate_config_modulator(mod_config)
         modulator = Modulator(mod_config)
         
-        vec_size = 100000
+        vec_size = 1000000
         vec_bool = np.random.choice([0, 1], size=vec_size)
         vec_mod = np.empty(int(vec_size/modulator.log_num_constellations), dtype=complex)
 

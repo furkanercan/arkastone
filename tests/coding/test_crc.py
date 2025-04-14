@@ -1,4 +1,4 @@
-from src.coding.crc import *
+from src.coding.crc.crc import *
 from src.tx.nr5g.polar.components.rnti_scrambling import *
 
 def test_crc24_polar_instantiation():

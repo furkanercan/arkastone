@@ -1,5 +1,5 @@
 import numpy as np
-from src.tx.modulator import Modulator
+from src.tx.core.modulator import Modulator
 from src.utils.validation.config_validator import validate_config_modulator
 
 def test_modulator_bpsk():

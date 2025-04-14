@@ -1,37 +1,25 @@
 import numpy as np
+from src.tx.encoders.base_encoder import BaseEncoder
+from src.coding.crc.crc import crc_encode  # Example CRC module
 
-class PolarEncoder():
+class PolarEncoder(BaseEncoder):
     """
-    PolarEncoder handles encoding and parity-check matrix creation for polar codes.
+    Concrete implementation of a polar encoder.
 
-    Attributes:
-        info_indices (list): Indices of information bits.
-        vec_polar_non_info_indices (list): Indices of non-information (frozen) bits.
-        matG_kxN (ndarray): The pruned polar encoding matrix (kxN).
-        matG_NxN (ndarray): The full polar encoding matrix (NxN).
-        matHt (ndarray): The transposed parity-check matrix for the polar code (Nx(N-k))
+    This encoder uses a pruned generator matrix (k x N) for polar encoding.
+    Optionally includes CRC based on the configuration provided via `code`.
 
-    Methods:
-        polar_encode(uncoded_data):
-            Encodes the given uncoded data using the pruned encoding matrix.
-        create_polar_matrices(len_logn):
-            Generates the full encoding matrix and pruned encoding matrix.
-        derive_parity_check_direct():
-            Creates the parity-check matrix from the full encoding matrix.
+    Inputs:
+    - info_bits: list of A bits (after CRC, if enabled)
+    Output:
+    - encoded bits: list of G bits
     """
+
     def __init__(self, code):
-        """
-        Initialize the PolarEncoder with necessary parameters.
-
-        Args:
-            info_indices (list): Indices of information bits.
-
-        Raises:
-            TypeError: If info_indices is not a list.
-        """
-        if not isinstance(code.code.info_indices, (list, np.ndarray)):
-            raise TypeError("info_indices must be a list or a NumPy array.")
-
+        super().__init__(A=code.len_k, G=code.len_n)
+        self.en_crc = code.en_crc
+        self.len_r = code.len_r
+        self.crc_bin = code.crc_bin if code.en_crc else None
         self.info_indices = code.info_indices
         self.vec_polar_non_info_indices = None
         self.matG_kxN = None
@@ -40,70 +28,48 @@ class PolarEncoder():
 
         self.create_polar_matrices(int(code.len_logn))
 
-    def encode_chain(self, encoded_data, uncoded_data):
-        # Function must use generic name 'encode_chain' to ensure abstraction consistency (later on)!
-        encoded_data[:] = self.polar_encode(uncoded_data)
-
-    def polar_encode(self, uncoded_data):
+    def _encode_np(self, info_bits: np.ndarray) -> np.ndarray:
         """
-        Encodes the uncoded data with the generator matrix
-
-        Returns: 
-            np.array: encoded data
-        
-        Raises:
-            TypeError: If uncoded_data is not a list.
-            ValueError: If self.matG_kxN is not created yet.
+        Main encoding logic.
+        Appends CRC if enabled, then applies polar transform via matG_kxN.
         """
-        if not isinstance(uncoded_data, (list, np.ndarray)):
-            raise TypeError("uncoded_data must be a list or a NumPy array.")
-        uncoded_data = np.array(uncoded_data) # Ensure it's a NumPy array
+        if self.en_crc:
+            padded = np.concatenate([info_bits, np.zeros(self.len_r, dtype=np.uint8)])
+            info_bits = crc_encode(info_bits.tolist(), padded.tolist(), self.crc_bin, self.len_r)
+            info_bits = np.array(info_bits, dtype=np.uint8)
+
+        return self.polar_encode(info_bits)
+
+    def polar_encode(self, uncoded_data: np.ndarray) -> np.ndarray:
         if self.matG_kxN is None:
             raise ValueError("The k-by-N generator matrix must be created first.")
         return (uncoded_data @ self.matG_kxN) % 2
 
-    def create_polar_matrices(self, len_logn):
+    def create_polar_matrices(self, len_logn: int):
         """
-        Creates the polar matrices:
-            - matG_kxN: The generator matrix in k-by-N form.
-            - matG_NxN: The generator matrix in N-by-N form.
-            - matHt   : The transposed parity-check matrix in N-by-(N-k) form.
-
-        Raises:
-            TypeError: If len_logn is not a positive integer.
+        Creates generator matrices used for polar encoding.
         """
-        if not isinstance(len_logn, int) or len_logn <= 0:
-            raise TypeError("len_logn must be a positive integer")
         matG_core = np.array([[1, 0], [1, 1]])
-        matG = matG_core  # Core matrix as the initial value
-        for _ in range(len_logn-1):
+        matG = matG_core
+        for _ in range(len_logn - 1):
             matG = np.kron(matG, matG_core)
 
-        self.matG_NxN = matG                # Full NxN G matrix
-        self.matG_kxN = matG[self.info_indices] # Pruned G matrix (kxN)
+        self.matG_NxN = matG
+        self.matG_kxN = matG[self.info_indices]
         self.derive_parity_check_direct()
 
     def derive_parity_check_direct(self):
         """
-        Derives the parity-check matrix H from the full (NxN) encoding matrix G.
-
-        Raises:
-            ValueError: If matG_NxN is not yet created.
+        Derives the parity-check matrix H for diagnostics (optional).
         """
-        if self.matG_NxN is None:
-            raise ValueError("Full encoding matrix (matG_NxN) must be created first.")
-
-        N = self.matG_NxN.shape[1] # Total number of columns
-        all_indices = set(range(N)) # Create a list of all indices
-        self.vec_polar_non_info_indices = list(all_indices - set(self.info_indices)) # Determine the columns not in info_indices
-        self.matHt = self.matG_NxN[:, self.vec_polar_non_info_indices] # Select these columns from matG_full and transpose them to form H
+        N = self.matG_NxN.shape[1]
+        all_indices = set(range(N))
+        self.vec_polar_non_info_indices = list(all_indices - set(self.info_indices))
+        self.matHt = self.matG_NxN[:, self.vec_polar_non_info_indices]
 
     def export_matrices(self):
         """
-        Export the created matrices as a dictionary.
-
-        Returns:
-            dict: A dictionary containing matG_NxN, matG_kxN, and matHt.
+        Utility method to export internal matrices for debugging/visualization.
         """
         return {
             "matG_NxN": self.matG_NxN,

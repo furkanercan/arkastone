@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from src.tx.tx_ofdm import OFDMTransmitter
+from src.tx.core.tx_ofdm import OFDMTransmitter
 from src.common.ofdm import OFDM
 
 config = {

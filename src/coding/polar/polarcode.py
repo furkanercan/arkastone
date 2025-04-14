@@ -13,6 +13,7 @@ class PolarCode:
         self.len_logn            = config["polar"]["len_logn"]
         self.en_crc              = config["polar"]["crc"]["enable"]
         self.len_r               = config["polar"]["crc"]["length"]
+        self.len_kr              = self.len_k + self.len_r
         
         self.qtz_enable          = config["polar"]["quantize"]["enable"]
         self.qtz_chn_max         = config["polar"]["quantize"]["chnl_upper"]
@@ -20,6 +21,8 @@ class PolarCode:
         self.qtz_int_max         = config["polar"]["quantize"]["intl_max"]
         self.qtz_int_min         = config["polar"]["quantize"]["intl_min"]
 
+        # These are related to decoding, they should move to decoder part.
+        self.max_flips           = config["polar"]["decoder"]["flip_max_iters"]
         self.fast_enable         = config["polar"]["fast_enable"]
         self.nodesize_rate0      = config["polar"]["fast_max_size"]["rate0"]
         self.nodesize_rate1      = config["polar"]["fast_max_size"]["rate1"]
