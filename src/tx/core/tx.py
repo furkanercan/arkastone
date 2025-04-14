@@ -1,8 +1,8 @@
 import numpy as np
 from src.tx.encoders.encoder import Encoder
-from src.tx.modulator import Modulator
+from src.tx.core.modulator import Modulator
 from src.common.ofdm import OFDM
-from src.tx.tx_ofdm import OFDMTransmitter
+from src.tx.core.tx_ofdm import OFDMTransmitter
 
 class Transmitter:
     def __init__(self, mod_config, ofdm_config, code):
@@ -25,7 +25,7 @@ class Transmitter:
         self.data_length_modulator_out  = self.get_modulated_data_length()
         self.data_shape_ofdm_out        = self.get_transmitted_data_shape()
         
-        self.encoded_data = np.empty(code.len_n, dtype=bool)
+        # self.encoded_data = np.empty(code.len_n, dtype=bool)
 
         # self.transmitted_data = np.empty(???, dtype=bool)
 
@@ -36,12 +36,17 @@ class Transmitter:
         else:
             self.modulated_data = np.empty(code.len_n // self.modulator.log_num_constellations, dtype=complex)  # Complex values for the rest
 
-    def tx_chain(self, uncoded_data):
-        self.encoder.encoder.encode_chain(self.encoded_data, uncoded_data)
-        self.modulator.modulate(self.modulated_data, self.encoded_data)
+    def tx_chain(self, uncoded_data, return_as_list=False):
+        if isinstance(uncoded_data, list): # Normalize input at entry
+            uncoded_data = np.array(uncoded_data, dtype=np.uint8)
+
+        encoded_data = self.encoder.encode(uncoded_data)
+        self.modulator.modulate(self.modulated_data, encoded_data)
         self.transmitted_data = self.ofdm_transmitter.transmit(self.modulated_data)
-        #other functionalities TBD
-        # return modulated_data
+
+        # if return_as_list:
+        #     return self.transmitted_data.tolist()
+        # return self.transmitted_data
 
     def get_modulated_data_length(self):
         """

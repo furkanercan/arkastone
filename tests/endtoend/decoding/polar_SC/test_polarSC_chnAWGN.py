@@ -12,8 +12,8 @@ from src.utils.create_run_id import *
 from src.utils.timekeeper import *
 
 from src.tx.encoders.encoder import PolarEncoder
-from src.tx.modulator import Modulator
-from src.rx.demodulator import Demodulator
+from src.tx.core.modulator import Modulator
+from src.rx.core.demodulator import Demodulator
 
 from src.coding.coding import Code
 from src.rx.decoders.polar.sc import PolarDecoder_SC
@@ -81,7 +81,8 @@ def main_test_polar_sc(config_file):
         snr_point = config["channel"]["snr"]["simpoints"]
         while(sim.run_simulation(idx)):
             info_data[:] = np.random.randint(0, 2, size=len_k)
-            encoder.encode_chain(encoded_data, info_data)
+            encoded_data = encoder.encode(info_data)
+            encoded_data = np.array(encoded_data)
             modulator.modulate(modulated_data, encoded_data)
             received_data = channel.apply_awgn(modulated_data, stdev, var)
             demodulator.demodulate(vec_llr, received_data, var)

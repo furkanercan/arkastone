@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: polar-sim-app
+    env: python
+    repo: https://github.com/furkanercan/communications_project
+    branch: main  # or whatever your branch is
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run streamlit_app.py --server.port 10000 --server.address 0.0.0.0
+    plan: free
+    autoDeploy: false

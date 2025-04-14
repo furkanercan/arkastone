@@ -46,7 +46,7 @@ def test_polar_encoder():
     
     # Instantiate and call class
     encoder = PolarEncoder(code)
-    encoder.encode_chain(encoded_data, uncoded_data)
+    encoded_data = encoder.encode(uncoded_data)
     
     # Test the outcome
     assert len(encoded_data) == code.code.len_n  # Block length for len_logn=3

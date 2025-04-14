@@ -1,5 +1,5 @@
 import numpy as np
-from src.rx.demodulator import Demodulator
+from src.rx.core.demodulator import Demodulator
 
 
 def test_demodulator_bpsk_hard():

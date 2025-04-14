@@ -60,20 +60,11 @@ class PolarDecoder_SC():
         self.call_decoding_schedule(vec_dec_sch_init, sch_limit)
         # Embed frozen and info indices to the schedule: H -> R0/R1
         self.embed_frozen_nodes()
-        # if(self.fast_enable): #If Fast-SSC is enabled
-            # Create key special nodes of length 2: (R0, R1 and REP only)
-            # vec_dec_sch_fast = self.create_key_special_nodes()
+        # Create key special nodes of length 2: (R0, R1 and REP only)
         self.create_key_special_nodes()
         self.create_decoding_stages()
-            # self.create_special_nodes(vec_dec_sch_fast)
-            # self.create_decoding_direction_fast(vec_dec_sch_fast)
         self.create_special_nodes()
         self.create_decoding_direction_fast()
-            # self.vec_dec_sch = vec_dec_sch_fast
-            # self.create_decoding_direction()
-        # else:
-        #     self.create_decoding_stages()
-        #     self.create_decoding_direction()
 
 
     def call_decoding_schedule(self, base_vector, sch_limit):

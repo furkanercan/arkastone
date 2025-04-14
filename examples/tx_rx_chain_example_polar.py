@@ -4,8 +4,8 @@ import string
 import time
 
 from src.coding.coding import Code
-from src.tx.tx import Transmitter
-from src.rx.rx import Receiver
+from src.tx.core.tx import Transmitter
+from src.rx.core.rx import Receiver
 from src.sim.sim import Simulation
 from src.channel.awgn import ChannelAWGN
 from src.utils.validation.config_loader import ConfigLoader

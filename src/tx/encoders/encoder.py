@@ -1,21 +1,39 @@
-import numpy as no
 from src.tx.encoders.polar_encoder import PolarEncoder
 from src.tx.encoders.uncoded_encoder import UncodedEncoder
 
-def create_encoder(code):
-    if code.type == "polar":
-        return PolarEncoder(code)
-    elif code.type == "uncoded":
-        return UncodedEncoder()
-    else:
-        raise ValueError(f"Unsupported encoder (code) type: {code.type}")
-
 class Encoder:
+    """
+    A lightweight factory-wrapper that creates the correct encoder based on `code.type`.
+
+    This class does not implement encoding itself — it delegates to an actual encoder instance.
+    It exists only to simplify usage in higher-level code like `Transmitter`.
+
+    Example:
+        encoder = Encoder(code)
+        output = encoder.encode(input_bits)
+
+    Internally:
+        - If code.type == 'polar', uses PolarEncoder
+        - If code.type == 'uncoded', uses UncodedEncoder
+        - You can extend this with new encoder types (e.g., nr5g)
+    """
+
     def __init__(self, code):
-        self.encoder_type = code.type
-        self.encoder = create_encoder(code)
+        encoder_type = code.type.lower()
+        if encoder_type == "polar":
+            self.encoder = PolarEncoder(code)
+        elif encoder_type == "uncoded":
+            self.encoder = UncodedEncoder(code)
+        else:
+            raise ValueError(f"Unsupported encoder type: {encoder_type}")
 
-    def __getattr__(self, name):
-        # Forward method calls and attribute access to the encoder instance
-        return getattr(self.encoder, name)
+    def encode(self, info_bits):
+        return self.encoder.encode(info_bits)
 
+    @property
+    def A(self):
+        return self.encoder.A
+
+    @property
+    def G(self):
+        return self.encoder.G
