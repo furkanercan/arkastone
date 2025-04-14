@@ -42,14 +42,16 @@
         "demod_type": "soft"
     },
     "channel": {
-        "type": "SNR",
-        "snr": {
+        "type": "AWGN",
+        "seed": 42
+    },
+    "sim": {
+        "sweep_type": "SNR",
+        "sweep_vals": {
             "start": 7.5,
             "end": 9.5,
             "step": 0.5
-        }
-    },
-    "sim": {
+        },
         "loop": {
             "num_frames": 5000,
             "num_errors": 20,

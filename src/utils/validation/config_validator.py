@@ -2,7 +2,7 @@ import os
 from src.utils.validation.config_validator_polar import *
 from src.utils.validation.validate_keys import *
 
-def validate_config_code(config):
+def validate_config_code(config_code):
     required_keys = {
         "type": str,
         "len_k": int,
@@ -12,63 +12,80 @@ def validate_config_code(config):
         "polar": dict # delegate to validate_polar
     }
 
-    validate_required_keys(config, required_keys, "code")
+    validate_required_keys(config_code, required_keys, "code")
     
-    len_k = config["len_k"]
+    len_k = config_code["len_k"]
     if len_k < 0:
         raise ValueError(f"'polar.len_k' ({len_k}) must be a non-negative value.")
 
-    if "polar" in config:
-        config["polar"] = validate_config_polar(config["polar"])
+    if "polar" in config_code:
+        config_code["polar"] = validate_config_polar(config_code["polar"])
     # Other codes will follow here. (LDPC, Turbo, CRC, RS, BCH, OSD, etc.)
 
-    return config
+    return config_code
 
 
 
 
-def validate_config_modulator(config):
+def validate_config_modulator(config_mod):
     required_keys = {
         "type": str,
     }
 
-    validate_required_keys(config, required_keys, "code")
+    validate_required_keys(config_mod, required_keys, "code")
 
-    return config
-
-
+    return config_mod
 
 
-def validate_config_channel(config):
+
+
+def validate_config_channel(config_chn):
     required_keys = {
         "type": str
     }
     optional_keys = {
-        "snr": dict  # Delegate to `validate_channel_snr_config`
-        # "ebn0": dict  # Delegate to `validate_channel_ebn0_config`
+        "seed": (int, 42)  # Default value is 42
     }
 
-    validate_required_keys(config, required_keys, "config")
+    validate_required_keys(config_chn, required_keys, "config_chn")
 
-    if "snr" in config:
-        config["snr"] = validate_config_channel_snr(config["snr"])
 
-    return config
+    return config_chn
 
 
 
-def validate_config_channel_snr(config):
+def validate_config_sim(config_sim):
+    required_keys = {
+        "sweep_type": str,
+        "sweep_vals": dict,
+        "loop": dict,   # Delegate to `validate_loop_config`
+        "save": dict    # Delegate to `validate_save_config`
+    }
+
+    validate_required_keys(config_sim, required_keys, "sim")
+
+    config_sim["loop"] = validate_config_sim_loop(config_sim["loop"])
+    config_sim["save"] = validate_config_sim_save(config_sim["save"])
+
+    if "sweep_vals" in config_sim:
+        config_sim["sweep_vals"] = validate_config_sim_snr(config_sim["sweep_vals"])
+
+    return config_sim
+
+
+
+def validate_config_sim_snr(config_sim_snr):
     required_keys = {
         "start": (int, float),
         "end": (int, float),
         "step": (int, float)
     }
 
-    validate_required_keys(config, required_keys, "channel.snr")
+    validate_required_keys(config_sim_snr, required_keys, "sim.snr")
 
-    start = config["start"]
-    end = config["end"]
-    step = config["step"]
+    start = config_sim_snr["start"]
+    end = config_sim_snr["end"]
+    step = config_sim_snr["step"]
 
     # Ensure 'end' is greater than or equal to 'start'
     if end < start:
@@ -77,43 +94,25 @@ def validate_config_channel_snr(config):
     # Ensure 'step' is positive
     if step <= 0:
         raise ValueError(f"'channel.snr.step' ({step}) must be positive.")
-    
 
-    config["simpoints"] = np.arange(start, end + step, step, dtype=float)
-    config["len_points"] = len(config["simpoints"])
+    config_sim_snr["simpoints"] = np.arange(start, end + step, step, dtype=float)
+    config_sim_snr["len_points"] = len(config_sim_snr["simpoints"])
 
-
-    return config
+    return config_sim_snr
 
 
-
-
-def validate_config_sim(config):
-    required_keys = {
-        "loop": dict,  # Delegate to `validate_loop_config`
-        "save": dict    # Delegate to `validate_save_config`
-    }
-
-    validate_required_keys(config, required_keys, "sim")
-
-    config["loop"] = validate_config_sim_loop(config["loop"])
-    config["save"] = validate_config_sim_save(config["save"])
-
-    return config
-
-
-def validate_config_ofdm(config):
+def validate_config_ofdm(config_ofdm):
     required_keys = {
         "num_subcarriers": int,  
         "cyclic_prefix_length": int    
     }
 
-    validate_required_keys(config, required_keys, "ofdm")
+    validate_required_keys(config_ofdm, required_keys, "ofdm")
 
-    return config
+    return config_ofdm
 
 
-def validate_config_sim_loop(config):
+def validate_config_sim_loop(config_sim_loop):
     required_keys = {
         "num_frames": int,  
         "num_errors": int   
@@ -122,12 +121,12 @@ def validate_config_sim_loop(config):
         "max_frames": (int, 1e7),  
     }
 
-    validate_required_keys(config, required_keys, "sim.loop")
-    validate_optional_keys(config, optional_keys, "sim.loop")
+    validate_required_keys(config_sim_loop, required_keys, "sim.loop")
+    validate_optional_keys(config_sim_loop, optional_keys, "sim.loop")
 
-    num_frames = config["num_frames"]
-    num_errors = config["num_errors"]
-    max_frames = config["max_frames"]
+    num_frames = config_sim_loop["num_frames"]
+    num_errors = config_sim_loop["num_errors"]
+    max_frames = config_sim_loop["max_frames"]
 
     if num_frames < 0:
         raise ValueError(f"'sim.loop.num_frames' ({num_frames}) must be a non-negative value.")
@@ -136,20 +135,20 @@ def validate_config_sim_loop(config):
     if max_frames < 0:
         raise ValueError(f"'sim.loop.max_frames' ({max_frames}) must be a non-negative value.")
 
-    return config
+    return config_sim_loop
 
 
 
-def validate_config_sim_save(config):
+def validate_config_sim_save(config_sim_save):
     optional_keys = {
         "plot_enable": (bool, False),
         "lutsim_enable": (bool, False),
         "save_output": (bool, True)
     }
 
-    validate_optional_keys(config, optional_keys, "sim.loop")
+    validate_optional_keys(config_sim_save, optional_keys, "sim.loop")
     
-    # config["path_output"]     = f"SC_{os.path.splitext(os.path.basename(filepath))[0]}_k{len_k}.out"
-    # config["path_fig_output"] = f"SC_{os.path.splitext(os.path.basename(filepath))[0]}_k{len_k}.png"
+    # config_sim_save["path_output"]     = f"SC_{os.path.splitext(os.path.basename(filepath))[0]}_k{len_k}.out"
+    # config_sim_save["path_fig_output"] = f"SC_{os.path.splitext(os.path.basename(filepath))[0]}_k{len_k}.png"
 
-    return config
+    return config_sim_save

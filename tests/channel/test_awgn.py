@@ -1,29 +1,43 @@
 import numpy as np
 import random
 from src.channel.awgn import ChannelAWGN
-from src.utils.validation.config_validator import validate_config_channel
+from src.utils.validation.config_validator import validate_config_channel, validate_config_sim
 
 from src.tx.core.modulator import Modulator
 from src.utils.validation.config_validator import validate_config_modulator
 
 def test_awgn_channel_real():
-    channel_config = {
-        'type': 'SNR',
-        'snr': {
-            'start': -2,
-            'end': 15,
-            'step': 0.5,
-            'demod_type': 'hard'
+    config_sim = {
+        "loop": {
+            "num_frames": 10000,
+            "num_errors": 50,
+            "max_frames": 10000000
+        },
+        "save": {
+            "plot_enable": False,
+            "lutsim_enable": False,
+            "save_output": False
+        },
+        "sweep_type": "SNR",
+        "sweep_vals": {
+            "start": -2,
+            "end": 15,
+            "step": 0.5
         }
     }
+    config_chn = {
+        "type": "AWGN",
+        "seed": 42
+    }
 
-    validate_config_channel(channel_config)
+    validate_config_channel(config_chn)
+    validate_config_sim(config_sim)
 
     for _ in range(5):  
         vec_mod = np.random.choice([-1, 1], size=10000000)
         stdev = 0.35
         variance = stdev**2
-        channel = ChannelAWGN(channel_config)  # Pass the channel_config to ChannelAWGN
+        channel = ChannelAWGN(config_chn, config_sim)  # Pass the config_chn to ChannelAWGN
         vec_awgn = channel.apply_awgn(vec_mod, stdev, variance)
 
         noise = vec_awgn - vec_mod
@@ -35,15 +49,29 @@ def test_awgn_channel_real():
     
 
 def test_awgn_channel_complex():
-    channel_config = {
-        'type': 'SNR',
-        'snr': {
-            'start': -2,
-            'end': 15,
-            'step': 0.5,
-            'demod_type': 'hard'
+    config_sim = {
+        "loop": {
+            "num_frames": 10000,
+            "num_errors": 50,
+            "max_frames": 10000000
+        },
+        "save": {
+            "plot_enable": False,
+            "lutsim_enable": False,
+            "save_output": False
+        },
+        "sweep_type": "SNR",
+        "sweep_vals": {
+            "start": -2,
+            "end": 15,
+            "step": 0.5
         }
     }
+    config_chn = {
+        "type": "AWGN",
+        "seed": 42
+    }
+
 
     mod_config_qpsk = {'type': 'qpsk', 
                        'demod_type': 'hard'}
@@ -54,7 +82,8 @@ def test_awgn_channel_complex():
     mod_dict = {"4":  mod_config_qpsk,
                 "16": mod_config_16qam} #Include future mods here later.
 
-    validate_config_channel(channel_config)
+    validate_config_channel(config_chn)
+    validate_config_sim(config_sim)
 
     for _ in range(10):  # Run the test 100 times
         mod_type_key = random.choice(list(mod_dict.keys()))
@@ -71,7 +100,7 @@ def test_awgn_channel_complex():
         
         stdev = random.uniform(0.1, 1.0)
         variance = stdev**2
-        channel = ChannelAWGN(channel_config)  # Pass the channel_config to ChannelAWGN
+        channel = ChannelAWGN(config_chn, config_sim)  # Pass the config_chn to ChannelAWGN
         vec_awgn = channel.apply_awgn(vec_mod, stdev, variance)
 
         noise = vec_awgn - vec_mod

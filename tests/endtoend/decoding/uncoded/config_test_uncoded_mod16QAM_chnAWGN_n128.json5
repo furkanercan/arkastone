@@ -21,14 +21,16 @@
         "cyclic_prefix_length": 16
     },
     "channel": {
-        "type": "SNR",
-        "snr": {
+        "type": "AWGN",
+        "seed": 42
+    },
+    "sim": {
+        "sweep_type": "SNR",
+        "sweep_vals": {
             "start": 8,
             "end": 13,
             "step": 1
-        }
-    },
-    "sim": {
+        },
         "loop": {
             "num_frames": 10000,
             "num_errors": 50,

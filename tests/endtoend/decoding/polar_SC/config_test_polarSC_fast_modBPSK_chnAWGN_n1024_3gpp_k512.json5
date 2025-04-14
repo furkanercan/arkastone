@@ -5,9 +5,9 @@
     ],
     "code": {
         "type": "POLAR",
-        "len_k": 64,
+        "len_k": 512,
         "polar":{
-            "polar_file": "src/lib/ecc/polar/3gpp/n256_3gpp.pc",
+            "polar_file": "src/lib/ecc/polar/3gpp/n1024_3gpp.pc",
             "crc":{
                 "enable": false,
                 "length" : 8
@@ -22,7 +22,7 @@
                 "bits_intl": 6,
                 "bits_frac": 1
             },
-            "fast_enable": false,
+            "fast_enable": true,
             "fast_max_size": {
                 "rate0": 1024,
                 "rate1": 1024,
@@ -38,7 +38,7 @@
         "cyclic_prefix_length": 16
     },
     "mod": {
-        "type": "16QAM",
+        "type": "BPSK",
         "demod_type": "soft"
     },
     "channel": {
@@ -48,14 +48,14 @@
     "sim": {
         "sweep_type": "SNR",
         "sweep_vals": {
-            "start": 5,
-            "end": 7.5,
+            "start": 1,
+            "end": 2,
             "step": 0.5
         },
         "loop": {
-            "num_frames": 5000,
-            "num_errors": 20,
-            "max_frames": 1000000
+            "num_frames": 1000,
+            "num_errors": 10,
+            "max_frames": 10000
         },
         "save": {
             "plot_enable": false,
@@ -64,8 +64,8 @@
         }
     },
     "reference": {
-        "snr":  [5.000e+00, 5.500e+00, 6.000e+00, 6.500e+00, 7.000e+00, 7.500e+00],
-        "ber":  [1.87406e-02, 7.15625e-03, 2.12500e-03, 5.83150e-04, 3.87740e-04, 1.06635e-04],
-        "bler": [7.98000e-02, 3.16000e-02, 1.02000e-02, 3.65898e-03, 1.96947e-03, 5.50373e-04]
+        "snr":  [1.00000e+00, 1.50000e+00, 2.00000e+00],
+        "ber":  [2.73963e-01, 9.86699e-02, 2.34941e-02],
+        "bler": [7.45000e-01, 3.27000e-01, 9.30000e-02]
     }
 }

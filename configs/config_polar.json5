@@ -38,18 +38,20 @@
         "demod_type": "soft"
     },
     "channel": {
-        "type": "SNR",
-        "snr": {
-            "start": 1,
-            "end": 1,
-            "step": 1
-        }
+        "type": "AWGN",
+        "seed": 42
     },
     "ofdm": {
         "num_subcarriers": 16,
         "cyclic_prefix_length": 4
     },
     "sim": {
+        "sweep_type": "SNR",
+        "sweep_vals": {
+            "start": 1,
+            "end": 1,
+            "step": 1
+        },
         "loop": {
             "num_frames": 1000,
             "num_errors": 0,

@@ -37,8 +37,6 @@ def parse_reference_data(config):
     return snr, ber, bler
 
 def main_test_uncoded(config_file):
-    seed = 42
-    np.random.seed(seed)
     configloader = ConfigLoader(config_file)
     config = configloader.get()
     ref_snr, ref_ber, ref_bler = parse_reference_data(configloader.raw_config)
@@ -52,7 +50,7 @@ def main_test_uncoded(config_file):
     code        = Code(code_config) 
     encoder     = UncodedEncoder()
     modulator   = Modulator(mod_config)
-    channel     = ChannelAWGN(channel_config, seed)
+    channel     = ChannelAWGN(channel_config, sim_config)
     demodulator = Demodulator(mod_config)
     decoder     = UncodedDecoder()
     decoder.initialize_decoder()
@@ -76,7 +74,6 @@ def main_test_uncoded(config_file):
 
     for idx, (stdev, var) in enumerate(zip(channel.stdev, channel.variance)):
         time_start = time.time()
-        snr_point = config["channel"]["snr"]["simpoints"]
         while(sim.run_simulation(idx)):
             info_data[:] = np.random.randint(0, 2, size=len_k)
             encoder.encode_chain(encoded_data, info_data)
@@ -90,7 +87,7 @@ def main_test_uncoded(config_file):
                 time_end = time.time()
                 time_elapsed = time_end - time_start
                 sim.update_run_results(idx, len_k)
-                status_msg = sim.display_run_results_temp(idx, snr_point[idx], format_time(time_elapsed), prev_status_msg)
+                status_msg = sim.display_run_results_temp(idx, sim.simpoints[idx], format_time(time_elapsed), prev_status_msg)
                 prev_status_msg = status_msg
 
         time_end = time.time()
@@ -98,12 +95,12 @@ def main_test_uncoded(config_file):
         sim.update_run_results(idx, len_k)
 
         # Validate against the reference data with tolerance
-        assert abs(snr_point[idx] - ref_snr[idx])  <= tolerance, f"Failure test_uncoded: {config_file}: SNR mismatch at point {snr_point[idx]} (expected {ref_snr[idx]})"
-        assert abs(sim.ber[idx]   - ref_ber[idx])  <= tolerance, f"Failure test_uncoded: {config_file}: BER mismatch at point {snr_point[idx]} dB: got {sim.ber[idx]}, (expected {ref_ber[idx]})"
-        assert abs(sim.bler[idx]  - ref_bler[idx]) <= tolerance, f"Failure test_uncoded: {config_file}: BLER mismatch at point {snr_point[idx]} dB: got {sim.bler[idx]} (expected {ref_bler[idx]})"
+        assert abs(sim.simpoints[idx] - ref_snr[idx])  <= tolerance, f"Failure test_uncoded: {config_file}: SNR mismatch at point {sim.simpoints[idx]} (expected {ref_snr[idx]})"
+        assert abs(sim.ber[idx]   - ref_ber[idx])  <= tolerance, f"Failure test_uncoded: {config_file}: BER mismatch at point {sim.simpoints[idx]} dB: got {sim.ber[idx]}, (expected {ref_ber[idx]})"
+        assert abs(sim.bler[idx]  - ref_bler[idx]) <= tolerance, f"Failure test_uncoded: {config_file}: BLER mismatch at point {sim.simpoints[idx]} dB: got {sim.bler[idx]} (expected {ref_bler[idx]})"
 
         
-        status_msg = sim.display_run_results_perm(idx, snr_point[idx], format_time(time_elapsed), prev_status_msg)
+        status_msg = sim.display_run_results_perm(idx, sim.simpoints[idx], format_time(time_elapsed), prev_status_msg)
         prev_status_msg = status_msg
 
 
