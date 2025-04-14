@@ -23,7 +23,7 @@ class Encoder:
         if encoder_type == "polar":
             self.encoder = PolarEncoder(code)
         elif encoder_type == "uncoded":
-            self.encoder = UncodedEncoder(code)
+            self.encoder = UncodedEncoder()
         else:
             raise ValueError(f"Unsupported encoder type: {encoder_type}")
 

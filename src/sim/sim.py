@@ -13,6 +13,18 @@ class Simulation:
         self.save_output   = config["save"]["save_output"]
 
         self.output_path = os.path.join(output_folder, "fec_results.out")
+
+        self.source = config["sweep_type"].lower()
+
+        self.simpoints = config["sweep_vals"]["simpoints"]
+        self.lenpoints = config["sweep_vals"]["len_points"]
+        
+        if(self.source == "snr"):
+            snr_linear = 10 ** (self.simpoints / 10) 
+            self.variance = 1/snr_linear
+            self.stdev = np.sqrt(self.variance)
+        else:
+            TypeError("Current version only supports SNR(dB) type simulation!")
         
         self.snr_points         = np.zeros(sim_size, dtype=float)
         self.count_frame        = np.zeros(sim_size, dtype=int)

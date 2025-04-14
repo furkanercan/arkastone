@@ -5,9 +5,9 @@
     ],
     "code": {
         "type": "POLAR",
-        "len_k": 64,
+        "len_k": 512,
         "polar":{
-            "polar_file": "src/lib/ecc/polar/3gpp/n256_3gpp.pc",
+            "polar_file": "src/lib/ecc/polar/3gpp/n1024_3gpp.pc",
             "crc":{
                 "enable": false,
                 "length" : 8
@@ -22,7 +22,7 @@
                 "bits_intl": 6,
                 "bits_frac": 1
             },
-            "fast_enable": false,
+            "fast_enable": true,
             "fast_max_size": {
                 "rate0": 1024,
                 "rate1": 1024,
@@ -48,8 +48,8 @@
     "sim": {
         "sweep_type": "SNR",
         "sweep_vals": {
-            "start": 5,
-            "end": 7.5,
+            "start": 7.5,
+            "end": 9.5,
             "step": 0.5
         },
         "loop": {
@@ -64,8 +64,8 @@
         }
     },
     "reference": {
-        "snr":  [5.000e+00, 5.500e+00, 6.000e+00, 6.500e+00, 7.000e+00, 7.500e+00],
-        "ber":  [1.87406e-02, 7.15625e-03, 2.12500e-03, 5.83150e-04, 3.87740e-04, 1.06635e-04],
-        "bler": [7.98000e-02, 3.16000e-02, 1.02000e-02, 3.65898e-03, 1.96947e-03, 5.50373e-04]
+        "snr":  [7.500e+00, 8.000e+00, 8.500e+00, 9.000e+00, 9.500e+00],
+        "ber":  [1.65205e-01, 6.92844e-02, 1.94609e-02, 4.44453e-03, 6.12306e-04],
+        "bler": [5.78000e-01, 2.78200e-01, 8.90000e-02, 2.54000e-02, 3.95335e-03]
     }
 }

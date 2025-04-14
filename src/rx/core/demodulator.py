@@ -97,8 +97,6 @@ class Demodulator:
         vec_llr[:] = 2 * (input_data) / awgn_var 
 
 
-
-        
     def hardDemod_qpsk(self, vec_hd, input_data):
         """
         QPSK demodulation: Recover bits from QPSK symbols.

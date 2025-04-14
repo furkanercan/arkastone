@@ -2,14 +2,17 @@ import numpy as np
 import math
 
 class ChannelAWGN:
-    def __init__(self, config, seed=None):
-        self.seed = seed
-        np.random.seed(seed)
-        self.source = config["type"].lower()
-        self.simpoints = config["snr"]["simpoints"]
-        self.lenpoints = config["snr"]["len_points"]
-        if(self.source == "snr"):
-            snr_linear = 10 ** (self.simpoints / 10) 
+    def __init__(self, config_chn, config_sim):
+        self.type = config_chn["type"].lower()
+        self.seed = config_chn["seed"]
+        np.random.seed(self.seed)
+
+        # Borrow the following two parameters from the simulation config
+        snr_type = config_sim["sweep_type"].lower()
+        simpoints = config_sim["sweep_vals"]["simpoints"]
+        
+        if(snr_type == "snr"):
+            snr_linear = 10 ** (simpoints / 10) 
             self.variance = 1/snr_linear
             self.stdev = np.sqrt(self.variance)
         else:
