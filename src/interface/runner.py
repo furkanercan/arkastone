@@ -9,8 +9,8 @@ from src.utils.validation.config_loader import ConfigLoader
 from src.sim.sim import Simulation
 from src.channel.awgn import ChannelAWGN
 from src.coding.coding import Code
-from src.tx.tx import Transmitter
-from src.rx.rx import Receiver
+from src.tx.core.tx import Transmitter
+from src.rx.core.rx import Receiver
 from src.utils.create_run_id import create_run_id
 from src.utils.output_handler import create_output_folder, save_config_to_folder
 from src.utils.timekeeper import format_time
@@ -34,7 +34,7 @@ def run_polar_sim_with_len_k(
     override_demod_type="soft",
     override_num_subcarriers=16,
     override_cyclic_prefix_length=4,
-    override_channel_type="SNR",
+    override_sim_type="SNR",
     override_snr_start=1.0,
     override_snr_end=2.0,
     override_snr_step=1.0,
@@ -77,10 +77,10 @@ def run_polar_sim_with_len_k(
         config["ofdm"]["cyclic_prefix_length"] = override_cyclic_prefix_length
 
         # Overwrite channel configuration
-        config["channel"]["type"] = override_channel_type
-        config["channel"]["snr"]["start"] = override_snr_start
-        config["channel"]["snr"]["end"] = override_snr_end
-        config["channel"]["snr"]["step"] = override_snr_step
+        config["sim"]["sweep_type"] = override_sim_type
+        config["sim"]["sweep_vals"]["start"] = override_snr_start
+        config["sim"]["sweep_vals"]["end"] = override_snr_end
+        config["sim"]["sweep_vals"]["step"] = override_snr_step
 
         # Overwrite sim loop configuration
         config["sim"]["loop"]["num_frames"] = override_num_frames
@@ -96,7 +96,7 @@ def run_polar_sim_with_len_k(
 
         # Initialize components
         code = Code(config["code"])
-        channel = ChannelAWGN(config["channel"], override_seed)
+        channel = ChannelAWGN(config["channel"], config["sim"])
         transmitter = Transmitter(config["mod"], config["ofdm"], code)
         receiver = Receiver(config["mod"], config["ofdm"], code)
         sim = Simulation(config["sim"], output_dir)
@@ -109,7 +109,6 @@ def run_polar_sim_with_len_k(
         
         for idx, (stdev, var) in enumerate(zip(channel.stdev, channel.variance)):
             time_start = time.time()
-            snr_point = config["channel"]["snr"]["simpoints"]
             while sim.run_simulation(idx):
                 info_data[:] = np.random.randint(0, 2, size=len_k)
                 transmitter.tx_chain(info_data)
@@ -122,7 +121,7 @@ def run_polar_sim_with_len_k(
                     time_elapsed = time_end - time_start
                     sim.update_run_results(idx, len_k)
                     res = sim.get_ber_results(idx, len_k)
-                    res.update({"snr": snr_point[idx], "time": format_time(time_elapsed)})
+                    res.update({"snr": sim.simpoints[idx], "time": format_time(time_elapsed)})
                     if idx < len(results):
                         results[idx] = res
                     else:
@@ -134,10 +133,10 @@ def run_polar_sim_with_len_k(
             time_end = time.time()
             time_elapsed = time_end - time_start
             sim.update_run_results(idx, len_k)
-            status_msg = sim.display_run_results_perm(idx, snr_point[idx], format_time(time_elapsed), prev_status_msg)
+            status_msg = sim.display_run_results_perm(idx, sim.simpoints[idx], format_time(time_elapsed), prev_status_msg)
             prev_status_msg = status_msg
             res = sim.get_ber_results(idx, len_k)
-            res.update({"snr": snr_point[idx], "time": format_time(time_elapsed)})
+            res.update({"snr": sim.simpoints[idx], "time": format_time(time_elapsed)})
             results.append(res)
             # results[idx] = res # update the existing entry instead of appending
 

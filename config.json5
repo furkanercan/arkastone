@@ -5,9 +5,9 @@
     ],
     "code": {
         "type": "POLAR",
-        "len_k": 64,
+        "len_k": 512,
         "polar":{
-            "polar_file": "src/lib/ecc/polar/3gpp/n256_3gpp.pc",
+            "polar_file": "src/lib/ecc/polar/3gpp/n1024_3gpp.pc",
             "crc":{
                 "enable": false,
                 "length" : 8
@@ -34,7 +34,7 @@
         }
     },
     "mod": {
-        "type": "BPSK",
+        "type": "QPSK",
         "demod_type": "soft"
     },
     "channel": {
