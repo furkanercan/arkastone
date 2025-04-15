@@ -1,5 +1,8 @@
 import streamlit as st
-from src.interface.runner import run_polar_sim_with_len_k
+from src.interface.streamlit_runner import streamlit_runner
+from src.utils.validation.config_loader import ConfigLoader
+from src.utils.validation.validation_manager import validate_config
+
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import time
@@ -23,13 +26,27 @@ choice = st.selectbox(
     format_func=lambda x: "Select an option" if x == "" else x
 )
 
+polar_file_map = {
+    1024: "src/lib/ecc/polar/3gpp/n1024_3gpp.pc",
+    512: "src/lib/ecc/polar/3gpp/n512_3gpp.pc",
+    256: "src/lib/ecc/polar/3gpp/n256_3gpp.pc",
+    128: "src/lib/ecc/polar/3gpp/n128_3gpp.pc",
+    64: "src/lib/ecc/polar/3gpp/n64_3gpp.pc",
+    32: "src/lib/ecc/polar/3gpp/n32_3gpp.pc",
+}
+
 if choice == "simulate a 5G polar code":
+    # Load the default configuration file for 5G polar code
+    default_config_path = "configs/config_polar.json5"
+    config = ConfigLoader(default_config_path).get()
+
     # Inputs for Polar Code Simulation
     st.subheader("Polar Code Simulation Configuration")
 
     # Code Configuration
     st.sidebar.header("Code Configuration")
-    len_N = st.sidebar.number_input("Set 5G Polar Code Length", min_value=16, max_value=4096, value=1024, step=16)
+    len_N = st.sidebar.number_input("Set 5G Polar Code Length", min_value=16, max_value=1024, value=1024, step=16)
+
     len_k = st.sidebar.number_input("Set Polar Code len_k", min_value=8, max_value=2048, value=512, step=8)
     decoder_algorithm = st.sidebar.selectbox("Decoder Algorithm", options=["SC", "SC-List", "SC-Flip"], index=0)
     list_size = None  # Default to None if not applicable
@@ -102,6 +119,35 @@ if choice == "simulate a 5G polar code":
 
     # Run Button
     if st.button("Run Configuration"):
+        st.spinner("Loading configuration...")
+        # Overwrite code configuration
+        config["code"]["polar"]["polar_file"] = polar_file_map[len_N]
+        config["code"]["len_k"] = len_k
+        config["code"]["polar"]["decoder"]["algorithm"] = decoder_algorithm
+        config["code"]["polar"]["crc"]["enable"] = crc_enable
+        config["code"]["polar"]["crc"]["length"] = crc_length
+        config["code"]["polar"]["quantize"]["enable"] = quantize_enable
+        config["code"]["polar"]["quantize"]["bits_chnl"] = bits_chnl
+        config["code"]["polar"]["quantize"]["bits_intl"] = bits_intl
+        config["code"]["polar"]["quantize"]["bits_frac"] = bits_frac
+        # Overwrite modulation configuration
+        config["mod"]["type"] = modulation_type
+        config["mod"]["demod_type"] = demod_type
+        # Overwrite OFDM configuration
+        config["ofdm"]["num_subcarriers"] = num_subcarriers
+        config["ofdm"]["cyclic_prefix_length"] = cyclic_prefix_length
+        # Overwrite sim configuration
+        config["sim"]["sweep_type"] = sim_type
+        config["sim"]["sweep_vals"]["start"] = snr_start
+        config["sim"]["sweep_vals"]["end"] = snr_end
+        config["sim"]["sweep_vals"]["step"] = snr_step
+        # Overwrite sim loop configuration
+        config["sim"]["loop"]["num_frames"] = num_frames
+        config["sim"]["loop"]["num_errors"] = num_errors
+        config["sim"]["loop"]["max_frames"] = max_frames
+        # Validate the overriden configuration (must have)
+        config = validate_config(config)
+
         with st.spinner("Running simulation..."):
             # Create placeholders for dynamic updates
             terminal_output_placeholder = st.empty()
@@ -112,31 +158,7 @@ if choice == "simulate a 5G polar code":
             previous_results_length = 0
 
             # Poll for results
-            for results, terminal_log in run_polar_sim_with_len_k(
-                "configs/config_polar.json5",
-                len_N,
-                len_k,
-                seed,
-                save_output,
-                decoder_algorithm,
-                crc_enable,
-                crc_length,
-                quantize_enable,
-                bits_chnl,
-                bits_intl,
-                bits_frac,
-                modulation_type,
-                demod_type,
-                num_subcarriers,
-                cyclic_prefix_length,
-                sim_type,
-                snr_start,
-                snr_end,
-                snr_step,
-                num_frames,
-                num_errors,
-                max_frames
-            ):
+            for results, terminal_log in streamlit_runner(config):
                 # Check if there are updates (every 3 seconds or when results are updated)
                 if time.time() % 3 < 0.5 or len(results) != previous_results_length:
 
