@@ -37,7 +37,7 @@ if choice == "simulate a 5G polar code":
     default_config_path = "configs/config_polar.json5"
     config = ConfigLoader(default_config_path).get()
 
-    st.subheader("Polar Code Simulation Configuration")
+    st.subheader("5G Polar Code Simulation Configuration")
 
     st.sidebar.header("Code Configuration")
     len_N = st.sidebar.number_input("Set 5G Polar Code Length", min_value=16, max_value=1024, value=1024, step=16)
