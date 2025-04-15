@@ -9,7 +9,7 @@ from src.utils.timekeeper import *
 import numpy as np
 import time
 
-def run_simulation_from_config(config: dict) -> dict:
+def run_simulation_from_config(config: dict, progress_callback=None) -> dict:
     run_id = create_run_id(config["code"]["type"], config["channel"]["seed"]) #Make part of config_sim
     output_dir = create_output_folder(run_id) #Make part of sim_config
     save_config_to_folder(config, output_dir)
@@ -45,15 +45,41 @@ def run_simulation_from_config(config: dict) -> dict:
                 sim.update_run_results(idx, len_k)
                 status_msg = sim.display_run_results_temp(idx, sim.simpoints[idx], format_time(time_elapsed), prev_status_msg)
                 prev_status_msg = status_msg
+                if progress_callback:
+                    progress_callback({
+                        "snr_point": sim.snr_points[idx],
+                        "ber": sim.ber[idx],
+                        "bler": sim.bler[idx],
+                        # "avg_steps": sim.avg_steps[idx],
+                        "avg_iters": sim.avg_iters[idx],
+                        "frames": sim.count_frame[idx],
+                        "errors": sim.count_frame_error[idx],
+                        "time_elapsed": format_time(time_elapsed),
+                    })
 
         time_end = time.time()
         time_elapsed = time_end - time_start
         sim.update_run_results(idx, len_k)
         status_msg = sim.display_run_results_perm(idx, sim.simpoints[idx], format_time(time_elapsed), prev_status_msg)
         prev_status_msg = status_msg
-        # results.append(result)
+        if progress_callback:
+            progress_callback({
+                "snr_point": sim.snr_points[idx],
+                "ber": sim.ber[idx],
+                "bler": sim.bler[idx],
+                # "avg_steps": sim.avg_steps[idx],
+                "avg_iters": sim.avg_iters[idx],
+                "frames": sim.count_frame[idx],
+                "errors": sim.count_frame_error[idx],
+                "time_elapsed": format_time(time_elapsed),
+            })
 
-    # return {
-    #     "status": "done",
-    #     "results": results
-    # }
+    return {
+        "status": "done",
+        "ber": sim.ber,
+        "bler": sim.bler,
+        # "avg_steps": sim.avg_steps[idx],
+        "avg_iters": sim.avg_iters,
+        "frames": sim.count_frame,
+        "errors": sim.count_frame_error,
+    }
