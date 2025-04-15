@@ -47,7 +47,7 @@ def run_simulation_from_config(config: dict, progress_callback=None) -> dict:
                 prev_status_msg = status_msg
                 if progress_callback:
                     progress_callback({
-                        "snr_point": sim.snr_points[idx],
+                        "snr_point": sim.simpoints[idx],
                         "ber": sim.ber[idx],
                         "bler": sim.bler[idx],
                         # "avg_steps": sim.avg_steps[idx],
@@ -55,6 +55,7 @@ def run_simulation_from_config(config: dict, progress_callback=None) -> dict:
                         "frames": sim.count_frame[idx],
                         "errors": sim.count_frame_error[idx],
                         "time_elapsed": format_time(time_elapsed),
+                        "type": "temp" 
                     })
 
         time_end = time.time()
@@ -64,7 +65,7 @@ def run_simulation_from_config(config: dict, progress_callback=None) -> dict:
         prev_status_msg = status_msg
         if progress_callback:
             progress_callback({
-                "snr_point": sim.snr_points[idx],
+                "snr_point": sim.simpoints[idx],
                 "ber": sim.ber[idx],
                 "bler": sim.bler[idx],
                 # "avg_steps": sim.avg_steps[idx],
@@ -72,14 +73,17 @@ def run_simulation_from_config(config: dict, progress_callback=None) -> dict:
                 "frames": sim.count_frame[idx],
                 "errors": sim.count_frame_error[idx],
                 "time_elapsed": format_time(time_elapsed),
+                "type": "perm" 
             })
 
     return {
         "status": "done",
+        "snr_point": sim.simpoints,
         "ber": sim.ber,
         "bler": sim.bler,
         # "avg_steps": sim.avg_steps[idx],
         "avg_iters": sim.avg_iters,
         "frames": sim.count_frame,
         "errors": sim.count_frame_error,
+        "type": "perm" 
     }

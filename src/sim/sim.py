@@ -17,6 +17,7 @@ class Simulation:
         self.source = config["sweep_type"].lower()
 
         self.simpoints = config["sweep_vals"]["simpoints"]
+        self.simpoints = np.array(self.simpoints)
         self.lenpoints = config["sweep_vals"]["len_points"]
         
         if(self.source == "snr"):

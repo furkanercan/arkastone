@@ -10,6 +10,7 @@ class ChannelAWGN:
         # Borrow the following two parameters from the simulation config
         snr_type = config_sim["sweep_type"].lower()
         simpoints = config_sim["sweep_vals"]["simpoints"]
+        simpoints = np.array(simpoints)
         
         if(snr_type == "snr"):
             snr_linear = 10 ** (simpoints / 10) 
