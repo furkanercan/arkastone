@@ -76,7 +76,7 @@ def main_test_uncoded(config_file):
         time_start = time.time()
         while(sim.run_simulation(idx)):
             info_data[:] = np.random.randint(0, 2, size=len_k)
-            encoder.encode_chain(encoded_data, info_data)
+            encoded_data = encoder.encode(info_data)
             modulator.modulate(modulated_data, encoded_data)
             received_data = channel.apply_awgn(modulated_data, stdev, var)
             demodulator.demodulate(vec_llr, received_data, var)

@@ -31,7 +31,7 @@ if choice == "simulate a 5G polar code":
     st.sidebar.header("Code Configuration")
     len_N = st.sidebar.number_input("Set 5G Polar Code Length", min_value=16, max_value=4096, value=1024, step=16)
     len_k = st.sidebar.number_input("Set Polar Code len_k", min_value=8, max_value=2048, value=512, step=8)
-    decoder_algorithm = st.sidebar.selectbox("Decoder Algorithm", options=["SC", "SCL", "SCFlip"], index=0)
+    decoder_algorithm = st.sidebar.selectbox("Decoder Algorithm", options=["SC", "SC-List", "SC-Flip"], index=0)
     list_size = None  # Default to None if not applicable
     scf_iters = None  # Default to None if not applicable
     if decoder_algorithm == "SCL":
@@ -51,9 +51,12 @@ if choice == "simulate a 5G polar code":
     num_subcarriers = st.sidebar.number_input("Number of Subcarriers", min_value=1, max_value=200, value=16, step=1)
     cyclic_prefix_length = st.sidebar.number_input("Cyclic Prefix Length", min_value=0, max_value=32, value=4, step=1)
 
-    # Channel Configuration
-    st.sidebar.header("Channel Configuration")
-    channel_type = st.sidebar.selectbox("Channel Type", options=["SNR", "AWGN"], index=0)
+    # # Channel Configuration
+    # st.sidebar.header("Channel Configuration")
+
+    # Simulation Configuration
+    st.sidebar.header("Simulation Configuration")
+    sim_type = st.sidebar.selectbox("Sweep Type", options=["SNR", "EbN0"], index=0)
     snr_start = st.sidebar.number_input("SNR Start (dB)", min_value=-20.0, max_value=50.0, value=1.0, step=0.1)
     snr_end = st.sidebar.number_input("SNR End (dB)", min_value=-20.0, max_value=50.0, value=2.0, step=0.1)
     snr_step = st.sidebar.number_input("SNR Step (dB)", min_value=0.1, max_value=10.0, value=1.0, step=0.1)
@@ -126,7 +129,7 @@ if choice == "simulate a 5G polar code":
                 demod_type,
                 num_subcarriers,
                 cyclic_prefix_length,
-                channel_type,
+                sim_type,
                 snr_start,
                 snr_end,
                 snr_step,

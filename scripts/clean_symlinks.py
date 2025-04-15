@@ -1,5 +1,8 @@
 import os
-
+"""
+This scipt is for GitHub action items located under .github/workflows/
+This script removes symbolic links in the 'tests' directory that point to the 'src' directory.
+"""
 # Define directories to skip
 SKIP_DIRS = {'__pycache__'}
 
