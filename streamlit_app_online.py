@@ -6,6 +6,8 @@ import plotly.graph_objects as go
 import time
 import requests
 
+BACKEND_URL = "https://arkastone-backend.onrender.com"
+
 # Add a logo with reduced size
 st.image("assets/arkastone_logo_transparent.png", width=200)
 
@@ -17,6 +19,25 @@ st.markdown(
     This tool allows you to simulate and analyze 5G communication components interactively.
     """
 )
+
+st.markdown("""
+### 🧠 How It Works (...for now)
+This is a **BYOB (bring your own brains)-type simulator**. 
+The backend server will run the simulation for you, and you can monitor the progress in real time.
+1. Fill in your simulation parameters below.
+2. Click **Run Simulation** to submit your configuration.
+3. Download and run the simulation client to compute using your machine.
+
+Once running, your results will automatically stream down below in real time.
+""")
+
+with open("dist/local_client", "rb") as f:
+    st.download_button(
+        label="⬇️ Download Simulation Client",
+        data=f,
+        file_name="client.exe",
+        mime="application/octet-stream"
+    )
 
 choice = st.selectbox(
     "I want to ...",
@@ -113,7 +134,7 @@ if choice == "simulate a 5G polar code":
                     else:
                         return obj
                 config = make_json_serializable(config)
-                res = requests.post("http://localhost:8001/run_config", json=config)
+                res = requests.post(f"{BACKEND_URL}/run_config", json=config)
                 if res.status_code == 200:
                     st.success("Configuration submitted. Waiting for results...")
                 else:
@@ -132,7 +153,7 @@ if choice == "simulate a 5G polar code":
 
         while True:
             try:
-                r = requests.get("http://localhost:8001/get_progress")
+                r = requests.get(f"{BACKEND_URL}/get_progress")
                 progress_data = r.json()
                 # st.write("Progress data received:", progress_data)
                 if progress_data and len(progress_data) > previous_results_length:
@@ -184,7 +205,7 @@ if choice == "simulate a 5G polar code":
                 break
 
             try:
-                fr = requests.get("http://localhost:8001/get_final_result")
+                fr = requests.get(f"{BACKEND_URL}/get_final_result")
                 if fr.status_code == 200 and fr.json().get("status") == "done":
                     st.success("Simulation completed!")
                     break
