@@ -104,7 +104,9 @@ Visualize:
 snakeviz profile.out
 ```
 
+## Generate distribution for local client
 
+pyinstaller --onefile local_client.py
 
 ---
 

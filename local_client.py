@@ -3,7 +3,7 @@ import requests
 import json
 from src.sim.sim_runner import run_simulation_from_config  # your real engine
 
-SERVER_URL = "http://localhost:8001"
+SERVER_URL = "https://arkastone-backend.onrender.com"
 
 def fetch_job():
     try:
