@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import Union
+from numpy.typing import NDArray
 import numpy as np
 
 class BaseEncoder(ABC):
@@ -53,12 +54,13 @@ class BaseEncoder(ABC):
         """
         pass
 
-    def check_input_length(self, info_bits: List[int]):
+    def check_input_length(self, info_bits: Union[NDArray[np.int_], list]):
         """
         Helper method to validate input bit length matches expected A.
         """
-        if len(info_bits) != self.A:
-            raise ValueError(f"{self.name}: Expected {self.A} bits, got {len(info_bits)}.")
+        actual_len = len(info_bits)
+        if actual_len != self.A:
+            raise ValueError(f"{self.name}: Expected {self.A} bits, got {actual_len}.")
 
     def reset(self):
         """

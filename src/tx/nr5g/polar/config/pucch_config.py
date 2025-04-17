@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from src.tx.nr5g.polar.config.crc_config import CRCConfig
+from src.coding.crc.config.crc_config import CRCConfig
 
 @dataclass
 class PUCCHConfig:

@@ -1,6 +1,7 @@
 import numpy as np
 from typing import List
-from src.tx.nr5g.polar.config.crc_config import CRCConfig
+from numpy.typing import NDArray
+from src.coding.crc.config.crc_config import CRCConfig
 
 class CRCEncoder:
     def __init__(self, config: CRCConfig):
@@ -21,28 +22,44 @@ class CRCEncoder:
         else:
             raise ValueError(f"Unsupported CRC mode: {self.mode}. Valid: ['5g', 'generic']")
 
-    def encode(self, vec_info: List[int]) -> List[int]:
+    def encode(self, vec_info: NDArray[np.int_]) -> NDArray[np.int_]:
         """
         Encode input bits with CRC and return only the CRC bits.
+
+        Args:
+            vec_info (NDArray[np.int_]): Input binary vector (0s and 1s)
+
+        Returns:
+            NDArray[np.int_]: Computed CRC bits
         """
-        len_k = len(vec_info)
-        vec_info_crc = np.zeros(len_k + self.crc_length, dtype=int)
+        vec_info = np.asarray(vec_info, dtype=np.int_)  # ensure it's an np array
+        len_k = vec_info.size
+
+        # Initialize buffer with input bits and preload value
+        vec_info_crc = np.zeros(len_k + self.crc_length, dtype=np.int_)
         vec_info_crc[:len_k] = vec_info
-        vec_info_crc[len_k:] = self.preload_val  # preload (if 1 or 0)
+        vec_info_crc[len_k:] = self.preload_val  # preload CRC tail
 
+        # Perform division (XOR with polynomial)
         for i in range(len_k):
-            if vec_info_crc[i] != 0:
-                for j in range(len(self.crc_poly_bin)):
-                    vec_info_crc[i + j] ^= self.crc_poly_bin[j]
+            if vec_info_crc[i]:
+                vec_info_crc[i:i + len(self.crc_poly_bin)] ^= self.crc_poly_bin
 
-        return vec_info_crc[len_k:].tolist()  # return only CRC bits
+        return vec_info_crc[len_k:]
 
-    def encode_and_append(self, vec_info: List[int]) -> List[int]:
+    def encode_and_append(self, vec_info: NDArray[np.int_]) -> NDArray[np.int_]:
         """
-        Return original bits + CRC
+        Append CRC bits to the input vector.
+
+        Args:
+            vec_info (NDArray[np.int_]): Input information bits.
+
+        Returns:
+            NDArray[np.int_]: Input bits with CRC bits appended.
         """
+        vec_info = np.asarray(vec_info, dtype=np.int_)  # make sure it's a NumPy array
         crc = self.encode(vec_info)
-        return vec_info + crc
+        return np.concatenate((vec_info, crc))
 
     def _instantiate_crcs_5g(self, len_r: int):
         crc_polys = {

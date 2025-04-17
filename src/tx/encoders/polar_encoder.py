@@ -1,26 +1,29 @@
 import numpy as np
 from src.tx.encoders.base_encoder import BaseEncoder
 from src.coding.crc.crc import crc_encode  # Example CRC module
+from src.coding.crc.config.crc_config import CRCConfig
+from src.coding.crc.crc_encoder import CRCEncoder  # Example CRC encoder module
 
 class PolarEncoder(BaseEncoder):
     """
     Concrete implementation of a polar encoder.
-
-    This encoder uses a pruned generator matrix (k x N) for polar encoding.
-    Optionally includes CRC based on the configuration provided via `code`.
-
-    Inputs:
-    - info_bits: list of A bits (after CRC, if enabled)
-    Output:
-    - encoded bits: list of G bits
     """
 
     def __init__(self, code):
         super().__init__(A=code.len_k, G=code.len_n)
         self.en_crc = code.en_crc
         self.len_r = code.len_r
-        self.crc_bin = code.crc_bin if code.en_crc else None
+        
+        self.crc_config = CRCConfig(
+            name='crc',
+            length=code.len_r,
+            preload_val=0,  
+            mode='5g'
+        )
+        self.crc = CRCEncoder(self.crc_config) if self.en_crc else None
+        
         self.info_indices = code.info_indices
+        self.crc_indices = code.crc_indices
         self.vec_polar_non_info_indices = None
         self.matG_kxN = None
         self.matG_NxN = None
@@ -34,9 +37,7 @@ class PolarEncoder(BaseEncoder):
         Appends CRC if enabled, then applies polar transform via matG_kxN.
         """
         if self.en_crc:
-            padded = np.concatenate([info_bits, np.zeros(self.len_r, dtype=np.uint8)])
-            info_bits = crc_encode(info_bits.tolist(), padded.tolist(), self.crc_bin, self.len_r)
-            info_bits = np.array(info_bits, dtype=np.uint8)
+            info_bits = self.crc.encode_and_append(info_bits)
 
         return self.polar_encode(info_bits)
 
@@ -55,7 +56,7 @@ class PolarEncoder(BaseEncoder):
             matG = np.kron(matG, matG_core)
 
         self.matG_NxN = matG
-        self.matG_kxN = matG[self.info_indices]
+        self.matG_kxN = matG[np.concatenate((self.info_indices, self.crc_indices))]
         self.derive_parity_check_direct()
 
     def derive_parity_check_direct(self):
@@ -64,7 +65,7 @@ class PolarEncoder(BaseEncoder):
         """
         N = self.matG_NxN.shape[1]
         all_indices = set(range(N))
-        self.vec_polar_non_info_indices = list(all_indices - set(self.info_indices))
+        self.vec_polar_non_info_indices = list(all_indices - set(self.info_indices) - set(self.crc_indices))
         self.matHt = self.matG_NxN[:, self.vec_polar_non_info_indices]
 
     def export_matrices(self):

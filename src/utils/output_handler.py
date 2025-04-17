@@ -64,5 +64,5 @@ def save_config_to_folder(config, output_folder, config_name="savedconfig.json")
             .replace('"[', '[')  # Remove quotes around lists
             .replace(']"', ']')
         )
-    print(f"Configuration saved to {config_path}.")
+    # print(f"Configuration saved to {config_path}.")
     return config_path
