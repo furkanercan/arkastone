@@ -31,7 +31,7 @@ class PolarCode:
         self.nodesize_ml_0011    = config["polar"]["fast_max_size"]["ml_0011"]
         self.nodesize_ml_0101    = config["polar"]["fast_max_size"]["ml_0101"]
 
-        self.frozen_bits, self.info_indices = self.create_polar_indices()
+        self.frozen_bits, self.info_indices, self.crc_indices = self.create_polar_indices()
 
 
     def create_polar_indices(self):
@@ -50,22 +50,22 @@ class PolarCode:
         Returns:
             frozen_bits (np.ndarray): Updated frozen bit vector.
             info_indices (np.ndarray): Updated information bit indices.
+            crc_indices (np.ndarray): Updated CRC bit indices (if enabled).
         """
 
         frozen_bits = np.ones(self.len_n, dtype=int)
-        vec_polar_info = np.ones(self.len_n, dtype=int)
+        info_indices = self.reliability_indices[:self.len_k]
 
-        len_i = self.len_k
-        if(self.en_crc):
-            len_i += self.len_r
-        for num, index in enumerate(self.reliability_indices[:len_i], start=0):
-            frozen_bits[index] = 0
-        for num, index in enumerate(self.reliability_indices[len_i:], start=len_i):
-            vec_polar_info[index] = 0 
-            
-        info_indices = np.nonzero(vec_polar_info)[0]
+        if self.en_crc:
+            crc_indices = self.reliability_indices[self.len_k:self.len_k + self.len_r]
+        else:
+            crc_indices = np.array([], dtype=int)
 
-        return frozen_bits, info_indices
+        # Set frozen bits to 0 for info_indices and crc_indices
+        frozen_bits[info_indices] = 0
+        frozen_bits[crc_indices] = 0
+
+        return frozen_bits, info_indices, crc_indices
 
 
     def __repr__(self):

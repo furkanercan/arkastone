@@ -47,9 +47,9 @@ def validate_optional_keys(config, optional_keys, section_name):
     for key, (expected_type, default_value) in optional_keys.items():
         if key not in config:
             # warnings.warn(f"'{section_name}.{key}' not found in configuration. Using default value: {default_value}.", UserWarning)
-            logging.info(
-                f"'{section_name}.{key}' not found. Defaulting to: {default_value}."
-            )
+            # logging.info(
+            #     f"'{section_name}.{key}' not found. Defaulting to: {default_value}."
+            # )
             config[key] = default_value 
         elif not isinstance(config[key], expected_type):
             raise TypeError(
