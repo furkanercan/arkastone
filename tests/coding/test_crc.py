@@ -1,5 +1,4 @@
 import numpy as np
-from src.coding.crc.crc import *
 from src.tx.nr5g.polar.components.rnti_scrambling import *
 from src.coding.crc.config.crc_config import CRCConfig
 from src.coding.crc.crc_encoder import CRCEncoder  
