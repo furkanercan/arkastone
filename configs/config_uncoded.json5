@@ -25,6 +25,7 @@
         "seed": 42
     },
     "sim": {
+        "mode": "dev",
         "sweep_type": "SNR",
         "sweep_vals": {
             "start": 1,
@@ -32,9 +33,9 @@
             "step": 1
         },
         "loop": {
-            "num_frames": 10000,
-            "num_errors": 50,
-            "max_frames": 10000000
+            "num_frames": 1000,
+            "num_errors": 0,
+            "max_frames": 1000000
         },
         "save": {
             "plot_enable": false,
