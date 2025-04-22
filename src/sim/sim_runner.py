@@ -1,3 +1,4 @@
+from src.configs.config_code import CodeConfig
 from src.coding.coding import Code
 from src.tx.core.tx import Transmitter
 from src.rx.core.rx import Receiver
@@ -14,11 +15,13 @@ def run_simulation_from_config(config: dict, progress_callback=None) -> dict:
     output_dir = create_output_folder(run_id) #Make part of sim_config
     save_config_to_folder(config, output_dir)
 
-    config_code = config["code"]
+    config_code = CodeConfig.from_dict(config["code"])
     config_chn  = config["channel"]
     config_mod  = config["mod"]
     config_sim  = config["sim"]
     config_ofdm = config["ofdm"]
+
+    
 
     sim = Simulation(config_sim, output_dir)
     code = Code(config_code) 

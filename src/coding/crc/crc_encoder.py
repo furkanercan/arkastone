@@ -1,7 +1,7 @@
 import numpy as np
 from typing import List
 from numpy.typing import NDArray
-from src.configs.crc_config import CRCConfig
+from src.configs.config_crc import CRCConfig
 
 class CRCEncoder:
     def __init__(self, config: CRCConfig):

@@ -2,6 +2,7 @@ import numpy as np
 # from src.common.create_polar_indices import create_polar_indices
 from src.tx.encoders.polar_encoder import PolarEncoder
 from src.coding.coding import Code
+from src.configs.config_code import CodeConfig
 from src.utils.validation.config_validator import validate_config_code
 
 def test_polar_encoder():
@@ -13,11 +14,15 @@ def test_polar_encoder():
             "polar_file": "src/lib/ecc/polar/3gpp/n1024_3gpp.pc",
             "crc":{
                 "enable": False,
-                "length" : 8
+                "name": "my_crc",
+                "length" : 6,
+                "preload_val": 0,
+                "mode": "generic"
             },
             "decoder":{
                 "algorithm": "SC",
-                "flip_max_iters": 30
+                "flip_max_iters": 30,
+                "list_size": 8
             },
             "quantize": {
                 "enable": False,
@@ -25,24 +30,25 @@ def test_polar_encoder():
                 "bits_intl": 6,
                 "bits_frac": 1
             },
-            "fast_enable": True,
-            "fast_max_size": {
-                "rate0": 1024,
-                "rate1": 1024,
-                "rep": 1024,
-                "spc": 1024,
-                "ml_0011": 0,
-                "ml_0101": 0
+            "fast_mode": {
+                "enable": True,
+                "max_rate0": 1024,
+                "max_rate1": 1024,
+                "max_rep": 1024,
+                "max_spc": 1024,
+                "max_ml_0011": 0,
+                "max_ml_0101": 0
             }
         }
     }
 
     validate_config_code(code_config)
-    code = Code(code_config) 
+    config_code = CodeConfig.from_dict(code_config)
+    code = Code(config_code) 
 
     # Initialize test variables
     uncoded_data = np.random.randint(0, 2, size=code.len_k)
-    encoded_data = np.empty(code.len_n, dtype=bool)
+    encoded_data = np.empty(code.code.len_n, dtype=bool)
     
     # Instantiate and call class
     encoder = PolarEncoder(code)
@@ -53,9 +59,9 @@ def test_polar_encoder():
     assert (encoded_data == (np.array(uncoded_data) @ encoder.matG_kxN) % 2).all()
 
     matrices = encoder.export_matrices()
-    assert matrices["matG_NxN"].shape == (code.len_n, code.len_n)
-    assert matrices["matG_kxN"].shape == (code.len_k, code.len_n)
-    assert matrices["matHt"].shape == (code.len_n, code.len_k)  
+    assert matrices["matG_NxN"].shape == (code.code.len_n, code.code.len_n)
+    assert matrices["matG_kxN"].shape == (code.len_k, code.code.len_n)
+    assert matrices["matHt"].shape == (code.code.len_n, code.len_k)  
 
 
 # test_polar_encoder()

@@ -1,11 +1,26 @@
 import numpy as np
 import math
 from numba import njit
+from src.configs.config_polarcode import PolarCodeConfig
 
 class PolarDecoder_SC():
-    def __init__(self, code):
-        self.len_logn = int(code.len_logn)
-        self.vec_polar_isfrozen = code.frozen_bits
+    def __init__(self, config: PolarCodeConfig):
+        self.len_logn = int(config.len_logn)
+        self.vec_polar_isfrozen = config.frozen_bits
+        self.info_indices = config.info_indices
+
+        self.qtz_enable  = config.quantize.enable
+        self.qtz_int_max = config.quantize.intl_max
+        self.qtz_int_min = config.quantize.intl_min
+        
+        self.fast_enable      = config.fast_mode.enable
+        self.nodesize_rate0   = config.fast_mode.max_rate0   if self.fast_enable else 0
+        self.nodesize_rate1   = config.fast_mode.max_rate1   if self.fast_enable else 0
+        self.nodesize_rep     = config.fast_mode.max_rep     if self.fast_enable else 0
+        self.nodesize_spc     = config.fast_mode.max_spc     if self.fast_enable else 0
+        self.nodesize_ml_0011 = config.fast_mode.max_ml_0011 if self.fast_enable else 0
+        self.nodesize_ml_0101 = config.fast_mode.max_ml_0101 if self.fast_enable else 0
+        
         self.mem_alpha = None
         self.mem_beta_l = None
         self.mem_beta_r = None
@@ -13,21 +28,11 @@ class PolarDecoder_SC():
         self.vec_dec_sch_size = []
         self.vec_dec_sch_depth = []
         self.vec_dec_sch_dir = []
-        self.info_indices = code.info_indices
-        self.qtz_enable = code.qtz_enable
-        self.qtz_int_max = code.qtz_int_max
-        self.qtz_int_min = code.qtz_int_min
+        
         self.use_optimized = 1
-        self.fast_enable = code.fast_enable
-        self.nodesize_rate0   = code.nodesize_rate0   if self.fast_enable else 0
-        self.nodesize_rate1   = code.nodesize_rate1   if self.fast_enable else 0
-        self.nodesize_rep     = code.nodesize_rep     if self.fast_enable else 0
-        self.nodesize_spc     = code.nodesize_spc     if self.fast_enable else 0
-        self.nodesize_ml_0011 = code.nodesize_ml_0011 if self.fast_enable else 0
-        self.nodesize_ml_0101 = code.nodesize_ml_0101 if self.fast_enable else 0
-        self.create_Gmat_NxN()
+        self.create_Gmat()
 
-    def create_Gmat_NxN(self):
+    def create_Gmat(self):
         """
         Creates the polar matrices:
             - matG_Nxk: The generator matrix in N-by-N form.

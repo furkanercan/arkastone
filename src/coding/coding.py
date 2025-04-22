@@ -1,21 +1,22 @@
-import numpy as np
-from src.coding.polar.polarcode import PolarCode
+from src.configs.config_code import CodeConfig
 from src.coding.uncoded import Uncoded
 
-def create_code(config):
-    if config["type"].lower() == "polar":
-        return PolarCode(config)
-    elif config["type"].lower() == "uncoded":
-        return Uncoded(config)   
-    else:
-        raise ValueError(f"Unsupported code type")
-
 class Code:
-    def __init__(self, config):
-        self.type = config["type"].lower()
-        self.code = create_code(config)
-        self.decoder = config[self.type]["decoder"]["algorithm"].lower()
+    def __init__(self, config: CodeConfig):
+        self.type = config.type.lower()
+        self.len_k = config.len_k
+        self.decoder = None
+
+        if self.type == "polar":
+            self.code = config.config  # This is a PolarCodeConfig instance
+            self.decoder = self.code.decoder.algorithm.lower()
+
+        elif self.type == "uncoded":
+            # You can define UncodedConfig later or pass len_k
+            self.code = Uncoded(len_k=self.len_k)
+
+        else:
+            raise ValueError(f"Unsupported code type: {self.type}")
 
     def __getattr__(self, name):
-        # Forward method calls and attribute access to the encoder instance
         return getattr(self.code, name)

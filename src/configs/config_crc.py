@@ -4,6 +4,7 @@ from typing import List, Optional
 
 @dataclass
 class CRCConfig:
+    enable: bool              # CRC enable flag
     name: str                 # name your crc, e.g. 'CRC24A'
     length: int               # Number of CRC bits (e.g. 24)
     preload_val: int = 0      # Used in DCI, etc.
