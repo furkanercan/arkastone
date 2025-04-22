@@ -2,6 +2,8 @@ from src.configs.config_code import CodeConfig
 from src.configs.config_modulation import ModConfig
 from src.configs.config_channel import ChannelConfig
 from src.configs.config_ofdm import OFDMConfig
+from src.configs.config_sim import SimConfig, SimSweepVals, SimLoopConfig, SimSaveConfig
+
 from src.coding.coding import Code
 from src.tx.core.tx import Transmitter
 from src.rx.core.rx import Receiver
@@ -21,7 +23,13 @@ def run_simulation_from_config(config: dict, progress_callback=None) -> dict:
     config_code = CodeConfig.from_dict(config["code"])
     config_chn = ChannelConfig(**config["channel"])
     config_mod = ModConfig(**config["mod"])
-    config_sim  = config["sim"]
+    config_sim = SimConfig(
+        mode=config["sim"]["mode"],
+        sweep_type=config["sim"]["sweep_type"],
+        sweep_vals=SimSweepVals(**config["sim"]["sweep_vals"]),
+        loop=SimLoopConfig(**config["sim"]["loop"]),
+        save=SimSaveConfig(**config["sim"]["save"])
+    )
     config_ofdm = OFDMConfig(**config["ofdm"])
 
     

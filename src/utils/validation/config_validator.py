@@ -100,9 +100,6 @@ def validate_config_sim_snr(config_sim_snr):
     if step <= 0:
         raise ValueError(f"'channel.snr.step' ({step}) must be positive.")
 
-    config_sim_snr["simpoints"] = np.arange(start, end + step, step, dtype=float)
-    config_sim_snr["len_points"] = len(config_sim_snr["simpoints"])
-
     return config_sim_snr
 
 

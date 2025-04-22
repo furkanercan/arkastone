@@ -1,16 +1,17 @@
 import numpy as np
 import math
 from src.configs.config_channel import ChannelConfig
+from src.configs.config_sim import SimConfig
 
 class ChannelAWGN:
-    def __init__(self, config_chn: ChannelConfig, config_sim):
+    def __init__(self, config_chn: ChannelConfig, config_sim: SimConfig):
         self.type = config_chn.type.lower()
         self.seed = config_chn.seed
         np.random.seed(self.seed)
 
         # Borrow the following two parameters from the simulation config
-        snr_type = config_sim["sweep_type"].lower()
-        simpoints = config_sim["sweep_vals"]["simpoints"]
+        snr_type = config_sim.sweep_type.lower()
+        simpoints = config_sim.sweep_vals.simpoints
         simpoints = np.array(simpoints)
         
         if(snr_type == "snr"):

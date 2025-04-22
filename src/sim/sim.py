@@ -1,24 +1,25 @@
 import os
 import datetime
 import numpy as np
+from src.configs.config_sim import SimConfig
 
 class Simulation:
-    def __init__(self, config, output_folder="tmp", sim_size=50):
-        self.num_frames = config["loop"]["num_frames"]
-        self.num_errors = config["loop"]["num_errors"]
-        self.max_frames = config["loop"]["max_frames"]
+    def __init__(self, config: SimConfig, output_folder="tmp", sim_size=50):
+        self.num_frames = config.loop.num_frames
+        self.num_errors = config.loop.num_errors
+        self.max_frames = config.loop.max_frames
 
-        self.plot_enable   = config["save"]["plot_enable"]
-        self.lutsim_enable = config["save"]["lutsim_enable"]
-        self.save_output   = config["save"]["save_output"]
+        self.plot_enable   = config.save.plot_enable
+        self.lutsim_enable = config.save.lutsim_enable
+        self.save_output   = config.save.save_output
 
         self.output_path = os.path.join(output_folder, "fec_results.out")
 
-        self.source = config["sweep_type"].lower()
+        self.source = config.sweep_type.lower()
 
-        self.simpoints = config["sweep_vals"]["simpoints"]
+        self.simpoints = config.sweep_vals.simpoints
         self.simpoints = np.array(self.simpoints)
-        self.lenpoints = config["sweep_vals"]["len_points"]
+        self.lenpoints = config.sweep_vals.len_points
         
         if(self.source == "snr"):
             snr_linear = 10 ** (self.simpoints / 10) 
@@ -38,7 +39,7 @@ class Simulation:
         self.avg_steps          = np.zeros(sim_size, dtype=float)
         self.avg_iters          = np.zeros(sim_size, dtype=float)
 
-        self.sim_mode = config["mode"]
+        self.sim_mode = config.mode
         if(self.sim_mode == "dev"):
             self.generate_sim_header()
 

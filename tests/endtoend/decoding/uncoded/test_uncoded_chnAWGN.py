@@ -5,6 +5,7 @@ import time
 
 from src.coding.coding import Code
 from src.sim.sim import Simulation
+from src.configs.config_sim import SimConfig, SimSweepVals, SimLoopConfig, SimSaveConfig
 from src.channel.awgn import ChannelAWGN
 from src.configs.config_channel import ChannelConfig
 from src.utils.validation.config_loader import ConfigLoader
@@ -48,7 +49,13 @@ def main_test_uncoded(config_file):
     config_code = CodeConfig.from_dict(config["code"])
     channel_config = ChannelConfig(**config["channel"])
     mod_config     = ModConfig(**config["mod"])
-    sim_config     = config["sim"]
+    sim_config     = SimConfig(
+        mode=config["sim"]["mode"],
+        sweep_type=config["sim"]["sweep_type"],
+        sweep_vals=SimSweepVals(**config["sim"]["sweep_vals"]),
+        loop=SimLoopConfig(**config["sim"]["loop"]),
+        save=SimSaveConfig(**config["sim"]["save"])
+    )
 
     sim         = Simulation(sim_config)
     code        = Code(config_code) 

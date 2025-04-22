@@ -2,6 +2,7 @@ import numpy as np
 import random
 from src.channel.awgn import ChannelAWGN
 from src.configs.config_channel import ChannelConfig
+from src.configs.config_sim import SimConfig, SimSweepVals, SimLoopConfig, SimSaveConfig
 from src.utils.validation.config_validator import validate_config_channel, validate_config_sim
 
 from src.configs.config_modulation import ModConfig
@@ -37,12 +38,19 @@ def test_awgn_channel_real():
     validate_config_sim(config_sim)
 
     chn_config = ChannelConfig(**config_chn)
+    sim_config = SimConfig(
+        mode=config_sim["mode"],
+        sweep_type=config_sim["sweep_type"],
+        sweep_vals=SimSweepVals(**config_sim["sweep_vals"]),
+        loop=SimLoopConfig(**config_sim["loop"]),
+        save=SimSaveConfig(**config_sim["save"])
+    )
 
     for _ in range(5):  
         vec_mod = np.random.choice([-1, 1], size=10000000)
         stdev = 0.35
         variance = stdev**2
-        channel = ChannelAWGN(chn_config, config_sim) 
+        channel = ChannelAWGN(chn_config, sim_config) 
         vec_awgn = channel.apply_awgn(vec_mod, stdev, variance)
 
         noise = vec_awgn - vec_mod
@@ -89,6 +97,13 @@ def test_awgn_channel_complex():
     validate_config_sim(config_sim)
 
     chn_config = ChannelConfig(**config_chn)
+    sim_config = SimConfig(
+        mode=config_sim["mode"],
+        sweep_type=config_sim["sweep_type"],
+        sweep_vals=SimSweepVals(**config_sim["sweep_vals"]),
+        loop=SimLoopConfig(**config_sim["loop"]),
+        save=SimSaveConfig(**config_sim["save"])
+    )
 
     for _ in range(10):  # Run the test 100 times
         mod_type_key = random.choice(list(mod_dict.keys()))
@@ -105,7 +120,7 @@ def test_awgn_channel_complex():
         
         stdev = random.uniform(0.1, 1.0)
         variance = stdev**2
-        channel = ChannelAWGN(chn_config, config_sim)  # Pass the config_chn to ChannelAWGN
+        channel = ChannelAWGN(chn_config, sim_config)  # Pass the config_chn to ChannelAWGN
         vec_awgn = channel.apply_awgn(vec_mod, stdev, variance)
 
         noise = vec_awgn - vec_mod
