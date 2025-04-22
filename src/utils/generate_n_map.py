@@ -2,7 +2,7 @@ import pandas as pd
 import math
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
-from src.coding.polar.nr5g.config.crc_config import CRCConfig
+from src.tx.nr5g.polar.config.crc_config import CRCConfig # location to change
 # from utils import determine_N  # assuming utils.py contains the logic
 # from src.coding.polar.nr5g.polar_nr5g_wrapper import PolarNR5GWrapper
 

@@ -5,11 +5,11 @@
     ],
     "code": {
         "type": "POLAR",
-        "len_k": 64,
+        "len_k": 512,
         "polar":{
-            "polar_file": "src/lib/ecc/polar/3gpp/n128_3gpp.pc",
+            "polar_file": "src/lib/ecc/polar/3gpp/n1024_3gpp.pc",
             "crc":{
-                "enable": true,
+                "enable": false,
                 "length" : 6
             },
             "decoder":{
@@ -46,21 +46,22 @@
         "cyclic_prefix_length": 16
     },
     "sim": {
+        "mode": "dev",
         "sweep_type": "SNR",
         "sweep_vals": {
             "start": 1,
-            "end": 1,
+            "end": 3,
             "step": 1
         },
         "loop": {
-            "num_frames": 1000,
-            "num_errors": 20,
+            "num_frames": 4000,
+            "num_errors": 10,
             "max_frames": 10000
         },
         "save": {
-            "plot_enable": true,
+            "plot_enable": false,
             "lutsim_enable": false,
-            "save_output": true
+            "save_output": false
         }
     }
 }

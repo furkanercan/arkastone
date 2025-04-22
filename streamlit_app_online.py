@@ -1,3 +1,15 @@
+st.markdown("""
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4Z4NY98FFT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-4Z4NY98FFT');
+</script>
+""", unsafe_allow_html=True)
+
+
 import streamlit as st
 from src.utils.validation.config_loader import ConfigLoader
 from src.utils.validation.validation_manager import validate_config
@@ -5,11 +17,18 @@ from src.utils.validation.validation_manager import validate_config
 import plotly.graph_objects as go
 import time
 import requests
+import uuid
+
+
+if "session_id" not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
 
 BACKEND_URL = "https://arkastone-backend.onrender.com"
 
 # Add a logo with reduced size
 st.image("assets/arkastone_logo_transparent.png", width=200)
+
+st.markdown(f"**Session ID:** `{st.session_state.session_id}`")
 
 # Add a welcome sentence
 st.title("the arkastone simulator")
@@ -20,22 +39,28 @@ st.markdown(
     """
 )
 
-st.markdown("""
-### 🧠 How It Works (...for now)
-This is a **BYOB (bring your own brains)-type simulator**. 
-The backend server will run the simulation for you, and you can monitor the progress in real time.
-1. Fill in your simulation parameters below.
-2. Click **Run Simulation** to submit your configuration.
-3. Download and run the simulation client to compute using your machine.
+with st.expander("### 🧠 How it works (for now)", expanded=False):
+    st.markdown("""
+    Welcome to Arkastone's **serverless, BYOB (Bring Your Own Brains)-type simulator**.
 
-Once running, your results will automatically stream down below in real time.
-""")
+    In simpler terms:
+    - The simulation engine runs **locally on your machine**.
+    - Arkastone handles the setup, configuration, and results.
+
+    ### 🏃‍♂️ get going:
+    1. **Download the simulation client** and run it on your machine.
+    2. When prompted, **enter the session ID** displayed above.
+    3. Choose your simulation and click **Run**.
+    4. As your simulation runs, **results will stream back to the UI** in real-time.
+
+    Enjoy the process, and watch your simulation unfold seamlessly!
+    """)
 
 with open("dist/local_client", "rb") as f:
     st.download_button(
-        label="⬇️ Download Simulation Client",
+        label="🐧 Download Simulation Client (Linux)",
         data=f,
-        file_name="client.exe",
+        file_name="arkastone-client",
         mime="application/octet-stream"
     )
 
@@ -61,7 +86,13 @@ if choice == "simulate a 5G polar code":
     st.subheader("5G Polar Code Simulation Configuration")
 
     st.sidebar.header("Code Configuration")
-    len_N = st.sidebar.number_input("Set 5G Polar Code Length", min_value=16, max_value=1024, value=1024, step=16)
+    powers_of_2 = [2**i for i in range(5, 11)] 
+    # len_N = st.sidebar.number_input("Set 5G Polar Code Length", min_value=16, max_value=1024, value=1024, step=16)
+    len_N = st.sidebar.selectbox(
+    "Set 5G Polar Code Length",
+    options=powers_of_2,
+    index=powers_of_2.index(1024),  # Default to 1024
+    )
     len_k = st.sidebar.number_input("Set Polar Code len_k", min_value=8, max_value=2048, value=512, step=8)
     decoder_algorithm = st.sidebar.selectbox("Decoder Algorithm", options=["SC", "SC-List", "SC-Flip"], index=0)
     crc_enable = st.sidebar.checkbox("Enable CRC", value=False)
@@ -134,7 +165,10 @@ if choice == "simulate a 5G polar code":
                     else:
                         return obj
                 config = make_json_serializable(config)
-                res = requests.post(f"{BACKEND_URL}/run_config", json=config)
+                res = requests.post(f"{BACKEND_URL}/run_config", json={
+                    "session_id": st.session_state.session_id,
+                    "config": config
+                })
                 if res.status_code == 200:
                     st.success("Configuration submitted. Waiting for results...")
                 else:
@@ -153,7 +187,7 @@ if choice == "simulate a 5G polar code":
 
         while True:
             try:
-                r = requests.get(f"{BACKEND_URL}/get_progress")
+                r = requests.get(f"{BACKEND_URL}/get_progress", params={"session_id": st.session_state.session_id})
                 progress_data = r.json()
                 # st.write("Progress data received:", progress_data)
                 if progress_data and len(progress_data) > previous_results_length:
@@ -205,7 +239,7 @@ if choice == "simulate a 5G polar code":
                 break
 
             try:
-                fr = requests.get(f"{BACKEND_URL}/get_final_result")
+                fr = requests.get(f"{BACKEND_URL}/get_final_result", params={"session_id": st.session_state.session_id})
                 if fr.status_code == 200 and fr.json().get("status") == "done":
                     st.success("Simulation completed!")
                     break

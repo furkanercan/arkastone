@@ -37,6 +37,7 @@
         "seed": 42
     },
     "sim": {
+        "mode": "dev",
         "sweep_type": "SNR",
         "sweep_vals": {
             "start": 1,

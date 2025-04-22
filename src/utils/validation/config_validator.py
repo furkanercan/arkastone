@@ -56,13 +56,19 @@ def validate_config_channel(config_chn):
 
 def validate_config_sim(config_sim):
     required_keys = {
+        "mode": str,
         "sweep_type": str,
         "sweep_vals": dict,
         "loop": dict,   # Delegate to `validate_loop_config`
         "save": dict    # Delegate to `validate_save_config`
     }
+    # optional_keys = {
+    #     "mode": (str, "dev")  # Default value is dev
+    # }
+
 
     validate_required_keys(config_sim, required_keys, "sim")
+    # validate_optional_keys(config_sim, optional_keys, "sim")
 
     config_sim["loop"] = validate_config_sim_loop(config_sim["loop"])
     config_sim["save"] = validate_config_sim_save(config_sim["save"])
