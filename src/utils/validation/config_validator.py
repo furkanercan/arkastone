@@ -30,10 +30,9 @@ def validate_config_code(config_code):
 def validate_config_modulator(config_mod):
     required_keys = {
         "type": str,
+        "demod_type": str
     }
-
-    validate_required_keys(config_mod, required_keys, "code")
-
+    validate_required_keys(config_mod, required_keys, "mod")
     return config_mod
 
 

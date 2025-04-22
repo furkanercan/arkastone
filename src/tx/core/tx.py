@@ -1,5 +1,6 @@
 import numpy as np
 from src.tx.encoders.encoder import Encoder
+from src.configs.config_modulation import ModConfig
 from src.tx.core.modulator import Modulator
 from src.common.ofdm import OFDM
 from src.tx.core.tx_ofdm import OFDMTransmitter
@@ -29,7 +30,7 @@ class Transmitter:
 
         # self.transmitted_data = np.empty(???, dtype=bool)
 
-        self.modulation_scheme = mod_config["type"].lower()
+        self.modulation_scheme = mod_config.type.lower()
 
         if self.modulation_scheme == "bpsk":
             self.modulated_data = np.empty(code.len_n, dtype=int)  # Real values for BPSK

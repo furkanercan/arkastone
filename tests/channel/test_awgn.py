@@ -3,6 +3,7 @@ import random
 from src.channel.awgn import ChannelAWGN
 from src.utils.validation.config_validator import validate_config_channel, validate_config_sim
 
+from src.configs.config_modulation import ModConfig
 from src.tx.core.modulator import Modulator
 from src.utils.validation.config_validator import validate_config_modulator
 
@@ -74,13 +75,10 @@ def test_awgn_channel_complex():
         "seed": 42
     }
 
+    mod_config_qpsk = ModConfig(type='qpsk', demod_type='hard')
+    mod_config_16qam = ModConfig(type='16qam', demod_type='hard')
+    # mod_config_64qam = ModConfig(type='64qam', demod_type='hard')
 
-    mod_config_qpsk = {'type': 'qpsk', 
-                       'demod_type': 'hard'}
-    mod_config_16qam = {'type': '16qam', 
-                       'demod_type': 'hard'}
-    mod_config_64qam = {'type': '64qam', 
-                       'demod_type': 'hard'}
     mod_dict = {"4":  mod_config_qpsk,
                 "16": mod_config_16qam} #Include future mods here later.
 
@@ -91,7 +89,7 @@ def test_awgn_channel_complex():
         mod_type_key = random.choice(list(mod_dict.keys()))
         mod_config = mod_dict[mod_type_key]
 
-        validate_config_modulator(mod_config)
+        # validate_config_modulator(mod_config)
         modulator = Modulator(mod_config)
         
         vec_size = 1000000
