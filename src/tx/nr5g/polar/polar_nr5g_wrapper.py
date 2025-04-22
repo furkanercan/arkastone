@@ -4,7 +4,7 @@ from dataclasses import dataclass
 # from src.tx.nr5g.polar.polar_nr5g_encoder_chains import pucch_encoder, pusch_encoder, pdcch_encoder, pbch_encoder
 # from src.tx.nr5g.polar.polar_nr5g_decoder_chains import pucch_decoder, pusch_decoder, pdcch_decoder, pbch_decoder
 from src.tx.nr5g.polar.components.subblock_interleaver import subblock_interleaver
-from src.coding.crc.config.crc_config import CRCConfig
+from src.configs.crc_config import CRCConfig
 from src.tx.nr5g.polar.config.pucch_config import PUCCHConfig
 
 
