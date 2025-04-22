@@ -67,10 +67,10 @@ def validate_config_polar_crc(config):
     validate_required_keys(config, required_keys, "polar.crc")
     validate_optional_keys(config, optional_keys, "polar.crc")
 
-    if config["enable"] not in (0, 1):
-        raise ValueError(f"'polar.crc.enable' ({config["enable"]}) must be a boolean value.")
-    if config["preload_val"] not in (0, 1):
-        raise ValueError(f"'polar.crc.enable' ({config["preload_val"]}) must be a boolean value.")
+    # if config["enable"] not in (0, 1):
+    #     raise ValueError(f"'polar.crc.enable' ({config["enable"]}) must be a boolean value.")
+    # if config["preload_val"] not in (0, 1):
+    #     raise ValueError(f"'polar.crc.enable' ({config["preload_val"]}) must be a boolean value.")
 
     return config
 
