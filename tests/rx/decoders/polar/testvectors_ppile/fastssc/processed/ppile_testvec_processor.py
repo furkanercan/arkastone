@@ -1,7 +1,7 @@
 import os
 
-RAW_DIR = "tests/rx/decoders/polar/testvectors_ppile/raw"
-PROCESSED_DIR = "tests/rx/decoders/polar/testvectors_ppile/processed"
+RAW_DIR = "tests/rx/decoders/polar/testvectors_ppile/fastssc/raw"
+PROCESSED_DIR = "tests/rx/decoders/polar/testvectors_ppile/fastssc/processed"
 # RAW_DIR = "raw"
 # PROCESSED_DIR = "."
 

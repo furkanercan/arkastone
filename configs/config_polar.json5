@@ -46,7 +46,7 @@
         "cyclic_prefix_length": 4
     },
     "sim": {
-        "mode": "rel",
+        "mode": "dev",
         "sweep_type": "SNR",
         "sweep_vals": {
             "start": 1,

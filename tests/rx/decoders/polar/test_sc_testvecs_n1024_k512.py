@@ -42,7 +42,7 @@ validate_config_code(code_config)
 
 def test_dec_sc_testvecs():
     base_name = "ppile_fastssc_n1024_k512_3gpp_Q0"
-    base_path = Path("tests/rx/decoders/polar/testvectors_ppile/processed")
+    base_path = Path("tests/rx/decoders/polar/testvectors_ppile/fastssc/processed")
     
     # === Load LLRs and reference outputs ===
     llr_file = base_path / f"{base_name}.in"

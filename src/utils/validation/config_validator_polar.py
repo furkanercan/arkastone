@@ -4,7 +4,8 @@ import math
 from src.utils.validation.validate_keys import validate_required_keys
 from src.utils.validation.validate_keys import validate_optional_keys
 from src.utils.validation.import_polarcode_file import import_polarcode_file
-from src.coding.crc.crc import instantiate_crcs
+from src.coding.crc.config.crc_config import CRCConfig
+from src.coding.crc.crc_encoder import CRCEncoder 
 
 def validate_config_polar(config):
     required_keys = {
@@ -65,19 +66,17 @@ def validate_config_polar_crc(config):
         "length": int
     }
 
-    # optional_keys = {
-    #     "poly_hex": (int, 0xD5)
-    # }
+    optional_keys = {
+        "mode"  : (str, 'generic')
+    }
 
     validate_required_keys(config, required_keys, "polar.crc")
-    # validate_optional_keys(config, optional_keys, "polar.crc")
+    validate_optional_keys(config, optional_keys, "polar.crc")
 
     enable = config["enable"]
 
     if enable < 0:
         raise ValueError(f"'polar.crc.enable' ({enable}) must be a non-negative value.")
-    
-    config["poly"], config["binary"] = instantiate_crcs(config["length"])
 
     return config
 
