@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from src.tx.core.tx_ofdm import OFDMTransmitter
 from src.common.ofdm import OFDM
+from src.configs.config_ofdm import OFDMConfig
 
 config = {
     "num_subcarriers": 16,
@@ -13,7 +14,8 @@ def test_transmitter_ofdm():
 
     time_domain_total_length = np.ceil(len_n/config["num_subcarriers"])*(config["num_subcarriers"]+config["cyclic_prefix_length"])
     # Create an OFDM instance and transmitter
-    ofdm = OFDM(config)
+    ofdm_config = OFDMConfig(**config)
+    ofdm = OFDM(ofdm_config)
     transmitter = OFDMTransmitter(ofdm)
     
     # Generate random modulated data (64 symbols for BPSK)
