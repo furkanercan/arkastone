@@ -13,6 +13,7 @@ class PolarCode:
         self.len_logn            = config["polar"]["len_logn"]
         self.en_crc              = config["polar"]["crc"]["enable"]
         self.len_r               = config["polar"]["crc"]["length"]
+        self.crc_mode            = config["polar"]["crc"]["mode"]
         self.len_kr              = self.len_k + self.len_r
         
         self.qtz_enable          = config["polar"]["quantize"]["enable"]

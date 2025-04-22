@@ -1,32 +1,48 @@
+import numpy as np
 from src.coding.crc.crc import *
 from src.tx.nr5g.polar.components.rnti_scrambling import *
+from src.coding.crc.config.crc_config import CRCConfig
+from src.coding.crc.crc_encoder import CRCEncoder  
 
 def test_crc24_polar_instantiation():
-    poly, crc_bin = instantiate_crcs(24)
-    assert poly == 0xB2B117
-    assert len(crc_bin) == 25
-    assert crc_bin == [1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1]
-    assert crc_bin[0] == 1  # Always leading 1
-    # Check specific bits from known polynomial
-    assert crc_bin[-1] == 1  # x^0 term
-    assert crc_bin[-2] == 1  # x^1
-    assert crc_bin[-3] == 1  # x^1
-    assert crc_bin[-4] == 0  # x^3 
+    crc_config = CRCConfig(
+        name='crc',
+        length=24,
+        preload_val=0,  
+        mode='generic'
+    )
+    crc = CRCEncoder(crc_config)
 
-    assert crc_bin[3] == 1  # x^3 
-    assert crc_bin[2] == 0  # x^3 
-    assert crc_bin[1] == 1  # x^3 
-    assert crc_bin[0] == 1  # x^3 
+    assert crc.crc_poly == 0xB2B117
+    assert len(crc.crc_poly_bin) == 25
+    assert crc.crc_poly_bin == [1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1]
+    assert crc.crc_poly_bin[0] == 1  # Always leading 1
+    # Check specific bits from known polynomial
+    assert crc.crc_poly_bin[-1] == 1  # x^0 term
+    assert crc.crc_poly_bin[-2] == 1  # x^1
+    assert crc.crc_poly_bin[-3] == 1  # x^1
+    assert crc.crc_poly_bin[-4] == 0  # x^3 
+
+    assert crc.crc_poly_bin[3] == 1  # x^3 
+    assert crc.crc_poly_bin[2] == 0  # x^3 
+    assert crc.crc_poly_bin[1] == 1  # x^3 
+    assert crc.crc_poly_bin[0] == 1  # x^3 
 
 def test_crc_encode_manual():
     info_bits = [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1]
     crc_answer = [1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0]
     
     len_k = len(info_bits)
-    vec_info_crc = np.zeros(len_k + 24, dtype=int)
-    _, crc_bin = instantiate_crcs(24)
+    # vec_info_crc = np.zeros(len_k + 24, dtype=int)
+    crc_config = CRCConfig(
+        name='crc',
+        length=24,
+        preload_val=0,  
+        mode='generic'
+    )
+    crc = CRCEncoder(crc_config)
 
-    crc_encoded = crc_encode(info_bits, vec_info_crc, crc_bin, len_k)
+    crc_encoded = crc.encode_and_append(info_bits)
     
     assert (crc_encoded[:len_k] == info_bits).all() # Check if original message is intact 
     crc_bits = crc_encoded[len_k:] 
@@ -36,25 +52,41 @@ def test_crc_encode_manual():
     assert crc_bits.tolist() == crc_answer # Check if the result checks out
 
 def test_crc_5g_polar_default_preload():
+
+    crc_config = CRCConfig(
+        name='crc',
+        length=24,
+        preload_val=0,  
+        mode='generic'
+    )
+    crc = CRCEncoder(crc_config)
+
     # info_bits = [0] * 128
-    len_r = 24
-    info_bits = hex_to_bin_list('0xABCD0123CDEF4567')
+
+    info_bits = [int(bit) for bit in bin(int('ABCD0123CDEF4567', 16))[2:].zfill(64)]
     crc_answer = [0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1]
     # print(info_bits)
-    crc = compute_crc_5g_polar(info_bits, len_r)
-    assert len(crc) == 24
-    assert all(b in (0, 1) for b in crc)
-    assert crc == crc_answer # Check if the result checks out
+    crc_encoded = crc.encode(info_bits)
+    assert len(crc_encoded) == 24
+    assert all(b in (0, 1) for b in crc_encoded)
+    assert np.array_equal(crc_encoded, crc_answer)
 
 def test_crc_5g_polar_dci_preload():
-    len_r = 24
-    info_bits = hex_to_bin_list('0x0123CDEF4567ABCD')
+    crc_config = CRCConfig(
+        name='crc',
+        length=24,
+        preload_val=1,  
+        mode='generic'
+    )
+    crc = CRCEncoder(crc_config)
+
+    info_bits = [int(bit) for bit in bin(int('0123CDEF4567ABCD', 16))[2:].zfill(64)]
     crc_answer = [1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1]
-    crc = compute_crc_5g_polar(info_bits, len_r, prefill_val=1)
-    assert len(crc) == 24
-    assert all(b in (0, 1) for b in crc)
-    print(crc)
-    assert crc == crc_answer # Check if the result checks out
+    crc_encoded = crc.encode(info_bits)
+    assert len(crc_encoded) == 24
+    assert all(b in (0, 1) for b in crc_encoded)
+    print(crc_encoded)
+    assert np.array_equal(crc_encoded, crc_answer)
     #TODO: find/create independent CRC calculator with preload function, compare values
 
 

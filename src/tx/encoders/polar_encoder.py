@@ -1,6 +1,5 @@
 import numpy as np
 from src.tx.encoders.base_encoder import BaseEncoder
-from src.coding.crc.crc import crc_encode  # Example CRC module
 from src.coding.crc.config.crc_config import CRCConfig
 from src.coding.crc.crc_encoder import CRCEncoder  # Example CRC encoder module
 
@@ -18,7 +17,7 @@ class PolarEncoder(BaseEncoder):
             name='crc',
             length=code.len_r,
             preload_val=0,  
-            mode='5g'
+            mode=code.crc_mode
         )
         self.crc = CRCEncoder(self.crc_config) if self.en_crc else None
         

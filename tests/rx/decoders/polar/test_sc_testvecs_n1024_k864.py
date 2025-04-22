@@ -42,7 +42,7 @@ code = Code(code_config)
 def test_dec_sc_testvecs():
     # File paths
     base_name = "ppile_fastssc_n1024_k864_3gpp_Q0"  # Example
-    base_path = Path("tests/rx/decoders/polar/testvectors_ppile/processed")
+    base_path = Path("tests/rx/decoders/polar/testvectors_ppile/fastssc/processed")
     llr_file = base_path / f"{base_name}.in"
     ref_file = base_path / f"{base_name}.out"
 

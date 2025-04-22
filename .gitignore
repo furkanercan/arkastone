@@ -28,6 +28,7 @@ output/*
 todo.list
 TODO.md
 sandbox/
+deprecated/
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
