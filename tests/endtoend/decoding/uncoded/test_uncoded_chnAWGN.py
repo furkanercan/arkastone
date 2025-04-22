@@ -11,6 +11,7 @@ from src.utils.output_handler import *
 from src.utils.create_run_id import *
 from src.utils.timekeeper import *
 
+from src.configs.config_modulation import ModConfig
 from src.tx.encoders.encoder import UncodedEncoder
 from src.tx.core.modulator import Modulator
 from src.rx.core.demodulator import Demodulator
@@ -45,7 +46,7 @@ def main_test_uncoded(config_file):
     # code_config    = config["code"]
     config_code = CodeConfig.from_dict(config["code"])
     channel_config = config["channel"]
-    mod_config     = config["mod"]
+    mod_config     = ModConfig(**config["mod"])
     sim_config     = config["sim"]
 
     sim         = Simulation(sim_config)

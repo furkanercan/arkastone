@@ -3,6 +3,7 @@ import numpy as np
 from src.tx.core.tx import Transmitter
 from src.coding.coding import Code
 from src.configs.config_code import CodeConfig
+from src.configs.config_modulation import ModConfig
 from src.utils.validation.config_validator import validate_config_code
 
 #Initialize code
@@ -55,13 +56,14 @@ ofdm_config = {
 validate_config_code(code_config)
 config_code = CodeConfig.from_dict(code_config)
 code = Code(config_code) 
+config_mod = ModConfig(**mod_config)
 
 def test_transmitter():
     # Initialize test variables
     uncoded_data = np.random.randint(0, 2, size=code.len_k)
     
     # Instantiate and call class
-    transmitter = Transmitter(mod_config, ofdm_config, code)
+    transmitter = Transmitter(config_mod, ofdm_config, code)
     transmitter.tx_chain(uncoded_data)
     
     # Test the outcome

@@ -1,10 +1,11 @@
 import numpy as np
 import math
+from src.configs.config_modulation import ModConfig
 
 class Demodulator:
-    def __init__(self, config):
-        self.scheme = config["type"].lower()
-        self.demod_type = config["demod_type"].lower()
+    def __init__(self, config: ModConfig):
+        self.scheme = config.type.lower()
+        self.demod_type = config.demod_type.lower()
 
         if self.scheme == "bpsk":
             self.normalization_factor = 1

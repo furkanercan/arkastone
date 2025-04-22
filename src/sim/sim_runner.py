@@ -1,4 +1,5 @@
 from src.configs.config_code import CodeConfig
+from src.configs.config_modulation import ModConfig
 from src.coding.coding import Code
 from src.tx.core.tx import Transmitter
 from src.rx.core.rx import Receiver
@@ -17,7 +18,7 @@ def run_simulation_from_config(config: dict, progress_callback=None) -> dict:
 
     config_code = CodeConfig.from_dict(config["code"])
     config_chn  = config["channel"]
-    config_mod  = config["mod"]
+    config_mod = ModConfig(**config["mod"])
     config_sim  = config["sim"]
     config_ofdm = config["ofdm"]
 

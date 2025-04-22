@@ -1,10 +1,9 @@
 import numpy as np
 from src.rx.core.demodulator import Demodulator
-
+from src.configs.config_modulation import ModConfig
 
 def test_demodulator_bpsk_hard():
-    config = {'type': 'bpsk', 
-              'demod_type': 'hard'}
+    config = ModConfig(type='bpsk', demod_type='hard')
     demodulator = Demodulator(config)
     input_data = np.array([-4, 0, 3, 8, 1, -9.1, 0.5, 0.001])
     demod_data = np.empty_like(input_data)
@@ -14,8 +13,7 @@ def test_demodulator_bpsk_hard():
     np.testing.assert_array_equal(demod_data, soln_data, err_msg="BPSK hard demodulator failed")
 
 def test_demodulator_bpsk_soft():
-    config = {'type': 'bpsk', 
-              'demod_type': 'soft'}
+    config = ModConfig(type='bpsk', demod_type='soft')
     demodulator = Demodulator(config)
     input_data = np.array([-4, 0, 3, 8, 1, -9.1, 0.5, 0.001])
     demod_data = np.empty_like(input_data)
