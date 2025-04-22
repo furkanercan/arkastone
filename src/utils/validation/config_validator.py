@@ -47,7 +47,7 @@ def validate_config_channel(config_chn):
     }
 
     validate_required_keys(config_chn, required_keys, "config_chn")
-
+    validate_optional_keys(config_chn, optional_keys, "config_chn")
 
     return config_chn
 

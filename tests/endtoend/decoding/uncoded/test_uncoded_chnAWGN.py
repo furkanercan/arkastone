@@ -6,6 +6,7 @@ import time
 from src.coding.coding import Code
 from src.sim.sim import Simulation
 from src.channel.awgn import ChannelAWGN
+from src.configs.config_channel import ChannelConfig
 from src.utils.validation.config_loader import ConfigLoader
 from src.utils.output_handler import *
 from src.utils.create_run_id import *
@@ -45,7 +46,7 @@ def main_test_uncoded(config_file):
 
     # code_config    = config["code"]
     config_code = CodeConfig.from_dict(config["code"])
-    channel_config = config["channel"]
+    channel_config = ChannelConfig(**config["channel"])
     mod_config     = ModConfig(**config["mod"])
     sim_config     = config["sim"]
 

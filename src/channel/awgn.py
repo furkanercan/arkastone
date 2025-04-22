@@ -1,10 +1,11 @@
 import numpy as np
 import math
+from src.configs.config_channel import ChannelConfig
 
 class ChannelAWGN:
-    def __init__(self, config_chn, config_sim):
-        self.type = config_chn["type"].lower()
-        self.seed = config_chn["seed"]
+    def __init__(self, config_chn: ChannelConfig, config_sim):
+        self.type = config_chn.type.lower()
+        self.seed = config_chn.seed
         np.random.seed(self.seed)
 
         # Borrow the following two parameters from the simulation config
