@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from src.coding.crc.crc_encoder import CRCEncoder
-from src.coding.crc.config.crc_config import CRCConfig
+from src.configs.crc_config import CRCConfig
 
 # Source for obtaining CRC polynomials and test vectors:
 # https://www.ghsi.de/pages/subpages/Online%20CRC%20Calculation/

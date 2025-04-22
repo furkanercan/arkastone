@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from src.coding.crc.config.crc_config import CRCConfig
+from src.configs.crc_config import CRCConfig
 
 @dataclass
 class PUCCHConfig:

@@ -4,7 +4,7 @@ import math
 from src.utils.validation.validate_keys import validate_required_keys
 from src.utils.validation.validate_keys import validate_optional_keys
 from src.utils.validation.import_polarcode_file import import_polarcode_file
-from src.coding.crc.config.crc_config import CRCConfig
+from src.configs.crc_config import CRCConfig
 from src.coding.crc.crc_encoder import CRCEncoder 
 
 def validate_config_polar(config):

@@ -1,6 +1,6 @@
 import numpy as np
 from src.tx.encoders.base_encoder import BaseEncoder
-from src.coding.crc.config.crc_config import CRCConfig
+from src.configs.crc_config import CRCConfig
 from src.coding.crc.crc_encoder import CRCEncoder  # Example CRC encoder module
 
 class PolarEncoder(BaseEncoder):
