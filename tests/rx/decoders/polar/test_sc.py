@@ -1,5 +1,6 @@
 import numpy as np
 from src.coding.coding import Code
+from src.configs.config_code import CodeConfig
 from src.utils.validation.config_validator import validate_config_code
 from src.rx.decoders.polar.sc import PolarDecoder_SC
 
@@ -11,11 +12,15 @@ code_config = {
         "polar_file": "src/lib/ecc/polar/3gpp/n1024_3gpp.pc",
         "crc":{
             "enable": False,
-            "length" : 8
+            "name": "my_crc",
+            "length" : 6,
+            "preload_val": 0,
+            "mode": "generic"
         },
         "decoder":{
             "algorithm": "SC",
-            "flip_max_iters": 30
+            "flip_max_iters": 30,
+            "list_size": 8
         },
         "quantize": {
             "enable": False,
@@ -23,21 +28,20 @@ code_config = {
             "bits_intl": 6,
             "bits_frac": 1
         },
-        "fast_enable": True,
-        "fast_max_size": {
-            "rate0": 1024,
-            "rate1": 1024,
-            "rep": 1024,
-            "spc": 1024,
-            "ml_0011": 0,
-            "ml_0101": 0
+        "fast_mode": {
+            "enable": True,
+            "max_rate0": 1024,
+            "max_rate1": 1024,
+            "max_rep": 1024,
+            "max_spc": 1024,
+            "max_ml_0011": 0,
+            "max_ml_0101": 0
         }
     }
 }
 validate_config_code(code_config)
-code = Code(code_config) 
-
-
+config_code = CodeConfig.from_dict(code_config)
+code = Code(config_code) 
 
 
 def test_decoder_initialization():
@@ -46,10 +50,10 @@ def test_decoder_initialization():
 
     # Test attribute initialization
     assert np.array_equal(decoder.vec_polar_isfrozen, code.frozen_bits)
-    assert decoder.len_logn     == code.len_logn
-    assert decoder.qtz_enable   == code.qtz_enable
-    assert decoder.qtz_int_max  == code.qtz_int_max
-    assert decoder.qtz_int_min  == code.qtz_int_min
+    assert decoder.len_logn     == code.code.len_logn
+    assert decoder.qtz_enable   == code.code.quantize.enable
+    assert decoder.qtz_int_max  == code.code.quantize.intl_max
+    assert decoder.qtz_int_min  == code.code.quantize.intl_min
 
 
 
@@ -75,7 +79,7 @@ def test_dec_sc_f():
     decoder.mem_alpha[stage_depth] = np.array([2.0, -3.0, 1.0, -1.0])  # Set example alpha values
 
     # Perform F-node computation
-    decoder.dec_sc_f(stage_size, stage_depth, is_quantized=True, max_value=code.qtz_int_max)
+    decoder.dec_sc_f(stage_size, stage_depth, is_quantized=True, max_value=code.code.quantize.intl_max)
 
     # Check the results
     expected_result = np.array([1.0, 1.0])  # Expected output after F-node computation

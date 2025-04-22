@@ -2,6 +2,7 @@ import numpy as np
 # from src.common.create_polar_indices import create_polar_indices
 from src.tx.core.tx import Transmitter
 from src.coding.coding import Code
+from src.configs.config_code import CodeConfig
 from src.utils.validation.config_validator import validate_config_code
 
 #Initialize code
@@ -12,11 +13,15 @@ code_config = {
         "polar_file": "src/lib/ecc/polar/3gpp/n1024_3gpp.pc",
         "crc":{
             "enable": False,
-            "length" : 8
+            "name": "my_crc",
+            "length" : 6,
+            "preload_val": 0,
+            "mode": "generic"
         },
         "decoder":{
             "algorithm": "SC",
-            "flip_max_iters": 30
+            "flip_max_iters": 30,
+            "list_size": 8
         },
         "quantize": {
             "enable": False,
@@ -24,14 +29,14 @@ code_config = {
             "bits_intl": 6,
             "bits_frac": 1
         },
-        "fast_enable": True,
-        "fast_max_size": {
-            "rate0": 1024,
-            "rate1": 1024,
-            "rep": 1024,
-            "spc": 1024,
-            "ml_0011": 0,
-            "ml_0101": 0
+        "fast_mode": {
+            "enable": True,
+            "max_rate0": 1024,
+            "max_rate1": 1024,
+            "max_rep": 1024,
+            "max_spc": 1024,
+            "max_ml_0011": 0,
+            "max_ml_0101": 0
         }
     }
 }
@@ -48,7 +53,8 @@ ofdm_config = {
 }
 
 validate_config_code(code_config)
-code = Code(code_config) 
+config_code = CodeConfig.from_dict(code_config)
+code = Code(config_code) 
 
 def test_transmitter():
     # Initialize test variables

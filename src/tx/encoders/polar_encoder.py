@@ -1,41 +1,36 @@
 import numpy as np
 from src.tx.encoders.base_encoder import BaseEncoder
-from src.configs.crc_config import CRCConfig
-from src.coding.crc.crc_encoder import CRCEncoder  # Example CRC encoder module
+from src.coding.crc.crc_encoder import CRCEncoder  
+from src.configs.config_polarcode import PolarCodeConfig
 
 class PolarEncoder(BaseEncoder):
     """
     Concrete implementation of a polar encoder.
     """
 
-    def __init__(self, code):
-        super().__init__(A=code.len_k, G=code.len_n)
-        self.en_crc = code.en_crc
-        self.len_r = code.len_r
+    def __init__(self, config: PolarCodeConfig):
+        super().__init__(A=config.len_k, G=config.len_n)
+        self.crc_enable = config.crc.enable
+        self.len_r = config.len_r
+        self.len_logn = config.len_logn
         
-        self.crc_config = CRCConfig(
-            name='crc',
-            length=code.len_r,
-            preload_val=0,  
-            mode=code.crc_mode
-        )
-        self.crc = CRCEncoder(self.crc_config) if self.en_crc else None
+        self.crc = CRCEncoder(config.crc) if config.crc.enable else None
         
-        self.info_indices = code.info_indices
-        self.crc_indices = code.crc_indices
+        self.info_indices = config.info_indices
+        self.crc_indices = config.crc_indices
         self.vec_polar_non_info_indices = None
         self.matG_kxN = None
         self.matG_NxN = None
         self.matHt = None
 
-        self.create_polar_matrices(int(code.len_logn))
+        self.create_polar_matrices(int(self.len_logn))
 
     def _encode_np(self, info_bits: np.ndarray) -> np.ndarray:
         """
         Main encoding logic.
         Appends CRC if enabled, then applies polar transform via matG_kxN.
         """
-        if self.en_crc:
+        if self.crc_enable:
             info_bits = self.crc.encode_and_append(info_bits)
 
         return self.polar_encode(info_bits)

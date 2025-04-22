@@ -4,7 +4,7 @@ from dataclasses import dataclass
 # from src.tx.nr5g.polar.polar_nr5g_encoder_chains import pucch_encoder, pusch_encoder, pdcch_encoder, pbch_encoder
 # from src.tx.nr5g.polar.polar_nr5g_decoder_chains import pucch_decoder, pusch_decoder, pdcch_decoder, pbch_decoder
 from src.tx.nr5g.polar.components.subblock_interleaver import subblock_interleaver
-from src.configs.crc_config import CRCConfig
+from src.configs.config_crc import CRCConfig
 from src.tx.nr5g.polar.config.pucch_config import PUCCHConfig
 
 
@@ -100,22 +100,22 @@ _set_master_code_length_N(self):n bits (excluding CRC).
         if self.channel_type in ('PUCCH', 'PUSCH'):
             self.A_min, self.A_max = 12, 1706
             if self.A >= 20:
-                self.crc = CRCConfig("CRC11", 11, 0, '5g')
+                self.crc = CRCConfig(1, "CRC11", 11, 0, '5g')
                 self.G_min = 31
                 self.G_max = 16384 if self.segmentation else 8192
             elif 12 <= self.A <= 19:
-                self.crc = CRCConfig("CRC6", 6, 0,'5g')
+                self.crc = CRCConfig(1, "CRC6", 6, 0,'5g')
                 self.G_min = 18
                 self.G_max = 8192
                 self.pc_bits = 3
                 self.pc_row_weight = 0 if (self.G - self.A <= 175) else 1 #TODO: check this condition
         elif self.channel_type == 'PDCCH':
-            self.crc = CRCConfig("CRC24", 24, 1,'5g')
+            self.crc = CRCConfig(1, "CRC24", 24, 1,'5g')
             self.input_bits_interleaving = True
             self.A_min, self.A_max = 1, 140
             self.G_min, self.G_max = 25, 8192
         elif self.channel_type == 'PBCH':
-            self.crc = CRCConfig("CRC24", 24, 1,'5g')
+            self.crc = CRCConfig(1, "CRC24", 24, 1,'5g')
             self.input_bits_interleaving = True
             self.A_min = self.A_max = 32
             self.G_min = self.G_max = 864

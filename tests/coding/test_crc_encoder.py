@@ -1,13 +1,13 @@
 import pytest
 import numpy as np
 from src.coding.crc.crc_encoder import CRCEncoder
-from src.configs.crc_config import CRCConfig
-
+from src.configs.config_crc import CRCConfig
+enable = 1, 
 # Source for obtaining CRC polynomials and test vectors:
 # https://www.ghsi.de/pages/subpages/Online%20CRC%20Calculation/
 
 def test_crc_encoder_5g_mode():
-    config = CRCConfig(name = 'CRC24A', length=24, preload_val=0, mode='5g')
+    config = CRCConfig(enable = 1, name = 'CRC24A', length=24, preload_val=0, mode='5g')
     encoder = CRCEncoder(config)
     info_bits = [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1]
     crc_answer = [1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0]
@@ -16,7 +16,7 @@ def test_crc_encoder_5g_mode():
     assert np.array_equal(crc, crc_answer)
 
 def test_crc_encoder_generic_mode():
-    config = CRCConfig(name = 'testCRC', length=16, preload_val=0, mode='generic')
+    config = CRCConfig(enable = 1, name = 'testCRC', length=16, preload_val=0, mode='generic')
     encoder = CRCEncoder(config)
     info_bits = [1, 0, 1, 0, 1, 1, 0, 1]
     crc_answer = [0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1]
@@ -27,7 +27,7 @@ def test_crc_encoder_generic_mode():
     assert np.array_equal(crc, crc_answer)
 
 def test_crc_encoder_encode_and_append():
-    config = CRCConfig(name = 'CRC24A', length=24, preload_val=0, mode='5g')
+    config = CRCConfig(enable = 1, name = 'CRC24A', length=24, preload_val=0, mode='5g')
     encoder = CRCEncoder(config)
     info_bits = [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1]
     info_crc_answer = [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0]
@@ -37,12 +37,12 @@ def test_crc_encoder_encode_and_append():
 
 def test_crc_encoder_invalid_mode():
     with pytest.raises(ValueError, match="Unsupported CRC mode: invalid."):
-        config = CRCConfig(name = 'invalid_crc', length=24, preload_val=0, mode='invalid')
+        config = CRCConfig(enable = 1, name = 'invalid_crc', length=24, preload_val=0, mode='invalid')
         CRCEncoder(config)
 
 def test_crc_encoder_invalid_length():
     with pytest.raises(ValueError, match="Unsupported 5G CRC length: 10."):
-        config = CRCConfig(name = 'CRC11', length=10, preload_val=0, mode='5g')
+        config = CRCConfig(enable = 1, name = 'CRC11', length=10, preload_val=0, mode='5g')
         CRCEncoder(config)
 
 

@@ -1,6 +1,7 @@
 import numpy as np
 from pathlib import Path
 from src.coding.coding import Code
+from src.configs.config_code import CodeConfig
 from src.utils.validation.config_validator import validate_config_code
 from src.rx.decoders.polar.sc import PolarDecoder_SC
 
@@ -8,35 +9,40 @@ from src.rx.decoders.polar.sc import PolarDecoder_SC
 code_config = {
     "type": "POLAR",
     "len_k": 489,
-    "polar": {
+    "polar":{
         "polar_file": "src/lib/ecc/polar/3gpp/n512_3gpp.pc",
-        "crc": {
+        "crc":{
             "enable": False,
-            "length": 8
+            "name": "my_crc",
+            "length" : 6,
+            "preload_val": 0,
+            "mode": "generic"
         },
-        "decoder": {
+        "decoder":{
             "algorithm": "SC",
-            "flip_max_iters": 30
+            "flip_max_iters": 30,
+            "list_size": 8
         },
         "quantize": {
-            "enable": True,
+            "enable": False,
             "bits_chnl": 5,
             "bits_intl": 6,
             "bits_frac": 1
         },
-        "fast_enable": True,
-        "fast_max_size": {
-            "rate0": 1024,
-            "rate1": 1024,
-            "rep": 1024,
-            "spc": 1024,
-            "ml_0011": 0,
-            "ml_0101": 0
+        "fast_mode": {
+            "enable": True,
+            "max_rate0": 1024,
+            "max_rate1": 1024,
+            "max_rep": 1024,
+            "max_spc": 1024,
+            "max_ml_0011": 0,
+            "max_ml_0101": 0
         }
     }
 }
 validate_config_code(code_config)
-code = Code(code_config)
+config_code = CodeConfig.from_dict(code_config)
+code = Code(config_code) 
 
 
 def test_dec_sc_testvecs():

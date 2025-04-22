@@ -21,11 +21,6 @@ class Receiver:
         self.len_n = code.len_n
         self.len_k = code.len_k
         self.len_logn = int(math.log2(code.len_n))
-        
-        # self.data_shape_ofdm_in      = 
-        # self.data_length_ofdm_out    = 
-        # self.data_length_demod_out   = code.len_n
-        # self.data_length_decoder_out = code.len_k
 
         self.demodulator = Demodulator(mod_config)
 

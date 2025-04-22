@@ -1,10 +1,11 @@
 import numpy as np
 from src.tx.nr5g.polar.components.rnti_scrambling import *
-from src.configs.crc_config import CRCConfig
+from src.configs.config_crc import CRCConfig
 from src.coding.crc.crc_encoder import CRCEncoder  
 
 def test_crc24_polar_instantiation():
     crc_config = CRCConfig(
+        enable= 1,
         name='crc',
         length=24,
         preload_val=0,  
@@ -34,6 +35,7 @@ def test_crc_encode_manual():
     len_k = len(info_bits)
     # vec_info_crc = np.zeros(len_k + 24, dtype=int)
     crc_config = CRCConfig(
+        enable= 1,
         name='crc',
         length=24,
         preload_val=0,  
@@ -53,6 +55,7 @@ def test_crc_encode_manual():
 def test_crc_5g_polar_default_preload():
 
     crc_config = CRCConfig(
+        enable= 1,
         name='crc',
         length=24,
         preload_val=0,  
@@ -72,6 +75,7 @@ def test_crc_5g_polar_default_preload():
 
 def test_crc_5g_polar_dci_preload():
     crc_config = CRCConfig(
+        enable= 1,
         name='crc',
         length=24,
         preload_val=1,  

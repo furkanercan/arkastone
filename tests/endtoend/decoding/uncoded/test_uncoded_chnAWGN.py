@@ -16,6 +16,7 @@ from src.tx.core.modulator import Modulator
 from src.rx.core.demodulator import Demodulator
 
 from src.coding.coding import Code
+from src.configs.config_code import CodeConfig
 from src.rx.decoders.uncoded_decoder import UncodedDecoder
 
 def parse_reference_data(config):
@@ -41,13 +42,14 @@ def main_test_uncoded(config_file):
     config = configloader.get()
     ref_snr, ref_ber, ref_bler = parse_reference_data(configloader.raw_config)
 
-    code_config    = config["code"]
+    # code_config    = config["code"]
+    config_code = CodeConfig.from_dict(config["code"])
     channel_config = config["channel"]
     mod_config     = config["mod"]
     sim_config     = config["sim"]
 
     sim         = Simulation(sim_config)
-    code        = Code(code_config) 
+    code        = Code(config_code) 
     encoder     = UncodedEncoder()
     modulator   = Modulator(mod_config)
     channel     = ChannelAWGN(channel_config, sim_config)
