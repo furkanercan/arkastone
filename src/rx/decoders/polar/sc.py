@@ -395,7 +395,7 @@ class PolarDecoder_SC():
 
     def dec_fastssc_spc(self, stage_depth, sch_dir):
         hard_decisions = np.where(self.mem_alpha[stage_depth] < 0, 1, 0)
-        parity = np.sum(hard_decisions) % 2 == 1
+        parity = np.sum(hard_decisions) % 2
 
         if parity:
             min_entry_index = np.argmin(np.abs(self.mem_alpha[stage_depth][:]))

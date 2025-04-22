@@ -38,7 +38,9 @@ class Simulation:
         self.avg_steps          = np.zeros(sim_size, dtype=float)
         self.avg_iters          = np.zeros(sim_size, dtype=float)
 
-        self.generate_sim_header()
+        self.sim_mode = config["mode"]
+        if(self.sim_mode == "dev"):
+            self.generate_sim_header()
 
 
     def run_simulation(self, idx):
@@ -84,25 +86,29 @@ class Simulation:
         self.avg_iters[idx] = self.get_avg_iters(idx)
 
     def display_run_results_temp(self, idx, snr_point, time_elapsed, prev_status_msg):
-        status_msg = f"{snr_point:.3e}   {self.ber[idx]:.5e}   {self.bler[idx]:.5e}   {self.avg_iters[idx]:.2e}   {self.count_frame[idx]:.2e}   {self.count_frame_error[idx]:.2e}   {time_elapsed}"
-        status_pad = ' ' * max(0, len(prev_status_msg) - len(status_msg))
-        end_char = '\r'
-        print(status_msg + status_pad, end=end_char, flush=True)
-        return status_msg
+        if(self.sim_mode == "dev"):
+            status_msg = f"{snr_point:.3e}   {self.ber[idx]:.5e}   {self.bler[idx]:.5e}   {self.avg_iters[idx]:.2e}   {self.count_frame[idx]:.2e}   {self.count_frame_error[idx]:.2e}   {time_elapsed}"
+            status_pad = ' ' * max(0, len(prev_status_msg) - len(status_msg))
+            end_char = '\r'
+            print(status_msg + status_pad, end=end_char, flush=True)
+            return status_msg
+        else:
+            return prev_status_msg
 
     def display_run_results_perm(self, idx, snr_point, time_elapsed, prev_status_msg):
-        
-        status_msg = f"{snr_point:.3e}   {self.ber[idx]:.5e}   {self.bler[idx]:.5e}   {self.avg_iters[idx]:.2e}   {self.count_frame[idx]:.2e}   {self.count_frame_error[idx]:.2e}   {time_elapsed}"
-        status_pad = ' ' * max(0, len(prev_status_msg) - len(status_msg))
-        end_char = '\n'
-        if self.save_output == 1:
-            with open(self.output_path, 'a') as file_o:
-                file_o.write(status_msg + "\n")
+        if(self.sim_mode == "dev"):
+            status_msg = f"{snr_point:.3e}   {self.ber[idx]:.5e}   {self.bler[idx]:.5e}   {self.avg_iters[idx]:.2e}   {self.count_frame[idx]:.2e}   {self.count_frame_error[idx]:.2e}   {time_elapsed}"
+            status_pad = ' ' * max(0, len(prev_status_msg) - len(status_msg))
+            end_char = '\n'
+            if self.save_output == 1:
+                with open(self.output_path, 'a') as file_o:
+                    file_o.write(status_msg + "\n")
 
-        print(status_msg + status_pad, end=end_char, flush=True)
-        prev_status_msg = status_msg
-        return status_msg
-    
+            print(status_msg + status_pad, end=end_char, flush=True)
+            prev_status_msg = status_msg
+            return status_msg
+        else:
+            return prev_status_msg
 
     def generate_sim_header(self):
         header_lines = [

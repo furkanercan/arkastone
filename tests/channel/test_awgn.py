@@ -18,6 +18,7 @@ def test_awgn_channel_real():
             "lutsim_enable": False,
             "save_output": False
         },
+        "mode": "dev",
         "sweep_type": "SNR",
         "sweep_vals": {
             "start": -2,
@@ -60,6 +61,7 @@ def test_awgn_channel_complex():
             "lutsim_enable": False,
             "save_output": False
         },
+        "mode": "dev",
         "sweep_type": "SNR",
         "sweep_vals": {
             "start": -2,
