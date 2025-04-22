@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from src.common.ofdm import OFDM
+from src.configs.config_ofdm import OFDMConfig
 
 config = {
     "num_subcarriers": 16,
@@ -9,7 +10,8 @@ config = {
 
 def test_ifft():
     # Create an OFDM instance
-    ofdm = OFDM(config)
+    ofdm_config = OFDMConfig(**config)
+    ofdm = OFDM(ofdm_config)
 
     # Create some frequency-domain data (16 subcarriers)
     frequency_domain_signal = np.random.randn(16) + 1j * np.random.randn(16)
@@ -22,7 +24,8 @@ def test_ifft():
     
 def test_fft():
     # Create an OFDM instance
-    ofdm = OFDM(config)
+    ofdm_config = OFDMConfig(**config)
+    ofdm = OFDM(ofdm_config)
 
     # Create some time-domain data (16 samples)
     time_domain_signal = np.random.randn(16) + 1j * np.random.randn(16)
@@ -35,7 +38,8 @@ def test_fft():
 
 def test_add_remove_cyclic_prefix():
     # Create an OFDM instance
-    ofdm = OFDM(config)
+    ofdm_config = OFDMConfig(**config)
+    ofdm = OFDM(ofdm_config)
 
     # Create a random time-domain signal (16 samples)
     time_domain_signal = np.random.randn(16) + 1j * np.random.randn(16)

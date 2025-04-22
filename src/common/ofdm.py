@@ -1,9 +1,10 @@
 import numpy as np
+from src.configs.config_ofdm import OFDMConfig
 
 class OFDM:
-    def __init__(self, config):
-        self.num_subcarriers = config["num_subcarriers"]
-        self.cyclic_prefix_length = config["cyclic_prefix_length"]
+    def __init__(self, config: OFDMConfig):
+        self.num_subcarriers = config.num_subcarriers
+        self.cyclic_prefix_length = config.cyclic_prefix_length
 
     def add_cyclic_prefix(self, ofdm_symbol):
         """Add a cyclic prefix to the OFDM symbol."""

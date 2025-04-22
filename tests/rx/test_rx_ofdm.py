@@ -3,6 +3,7 @@ import numpy as np
 from src.tx.core.tx_ofdm import OFDMTransmitter
 from src.rx.core.rx_ofdm import OFDMReceiver
 from src.common.ofdm import OFDM
+from src.configs.config_ofdm import OFDMConfig
 
 config = {
     "num_subcarriers": 16,
@@ -12,7 +13,8 @@ config = {
 def test_receiver():
     len_n = 64
     # Create an OFDM instance and receiver
-    ofdm = OFDM(config)
+    ofdm_config = OFDMConfig(**config)
+    ofdm = OFDM(ofdm_config)
     receiver = OFDMReceiver(ofdm, len_n)
     
     # Generate random modulated data (len_n symbols for BPSK)
