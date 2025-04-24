@@ -21,8 +21,8 @@ class Transmitter:
         self.ofdm             = OFDM(ofdm_config)
         self.ofdm_transmitter = OFDMTransmitter(self.ofdm)
 
-        self.data_length_encoder_in     = code.len_k
-        self.data_length_encoder_out    = code.len_n
+        self.data_length_encoder_in     = code.len_k # Not needed may mislead when crc enabled
+        self.data_length_encoder_out    = code.len_n # Not needed either
         self.data_length_modulator_out  = self.get_modulated_data_length()
         self.data_shape_ofdm_out        = self.get_transmitted_data_shape()
         

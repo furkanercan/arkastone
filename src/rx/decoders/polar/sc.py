@@ -464,7 +464,7 @@ def dec_sc_f_numba(llr_a, llr_b, is_quantized, max_value):
 
     for i in range(mid_point):
         abs_llr = min(abs(llr_a[i]), abs(llr_b[i]))
-        sign = np.sign(llr_a[i] * llr_b[i])
+        sign = np.sign(llr_a[i] * llr_b[i])  # No need to multiply here. Profile later.
         result[i] = abs_llr * sign
 
         if is_quantized:
