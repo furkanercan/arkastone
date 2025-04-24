@@ -61,6 +61,7 @@ class PolarDecoder_SCF(PolarDecoder_SC):
                 else:
                     self.mem_beta_r[0][0] = 0
             elif self.vec_dec_sch[i] == 'R1':
+                self.vec_decoded_kr[info_ctr] = 0 if self.mem_alpha[0][0] >= 0 else 1
                 self.vec_leaf_mag[info_ctr] = np.abs(self.mem_alpha[0][0])
                 # self.vec_decoded_kr[info_ctr] = 0 if self.mem_alpha[0][0] >= 0 else 1
                 if self.vec_dec_sch_dir[i] == 0:
@@ -69,7 +70,7 @@ class PolarDecoder_SCF(PolarDecoder_SC):
                     self.mem_beta_r[0][0] = 0 if self.mem_alpha[0][0] >= 0 else 1
                 info_ctr += 1
         
-        self.vec_decoded_kr[:] = ((self.mem_beta_l[self.len_logn] @ self.matG_Nxk) % 2)
+        # self.vec_decoded_kr[:] = ((self.mem_beta_l[self.len_logn] @ self.matG_Nxk) % 2)
                 
 
     def dec_sc_with_flip(self, next_flip_idx):
