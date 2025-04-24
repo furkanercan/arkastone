@@ -25,7 +25,7 @@ class PolarCodeConfig:
     rel_idx     : np.ndarray = field(init=False)
     frozen_bits : np.ndarray = field(init=False)
     info_indices: np.ndarray = field(init=False)
-    crc_indices : np.ndarray = field(init=False)
+    # crc_indices : np.ndarray = field(init=False)
 
     def __post_init__(self):
         self.rel_idx = import_polarcode_file(self.polar_file)
@@ -33,7 +33,7 @@ class PolarCodeConfig:
         self.len_logn = int(math.log2(self.len_n))
         self.len_r = self.crc.length
         self.len_kr = self.len_k + self.len_r
-        self.frozen_bits, self.info_indices, self.crc_indices = self.create_polar_indices()
+        self.frozen_bits, self.info_indices = self.create_polar_indices()
 
 
     def create_polar_indices(self):
@@ -42,17 +42,19 @@ class PolarCodeConfig:
         """
 
         frozen_bits = np.ones(self.len_n, dtype=int)
-        info_indices = np.array(self.rel_idx[:self.len_k])
+        # info_indices = np.array(self.rel_idx[:self.len_k])
 
         if self.crc.enable:
-            crc_indices = np.array(self.rel_idx[self.len_k:self.len_k + self.crc.length])
+            # crc_indices = np.array(self.rel_idx[self.len_k:self.len_k + self.crc.length])
+            info_indices = np.array(self.rel_idx[:self.len_kr])
         else:
-            crc_indices = np.array([], dtype=int)
+            # crc_indices = np.array([], dtype=int)
+            info_indices = np.array(self.rel_idx[:self.len_k])
 
         frozen_bits[info_indices] = 0
-        frozen_bits[crc_indices] = 0
+        # frozen_bits[crc_indices] = 0
 
-        return frozen_bits, info_indices, crc_indices
+        return frozen_bits, info_indices
     
     def __repr__(self):
         truncated_info = self.info_indices[:10]
