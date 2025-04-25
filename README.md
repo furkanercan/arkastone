@@ -88,4 +88,4 @@ Contributions are welcome! Please follow these steps:
 This project is licensed under the MIT License. See the `LICENSE` file for details.
 
 ## Contact
-For questions and collaborations, contact furkanercan88 [at] gmail [dot] com or https://github.com/furkanercan].
+For questions and collaborations, contact furkanercan88 [at] gmail [dot] com or https://github.com/furkanercan.

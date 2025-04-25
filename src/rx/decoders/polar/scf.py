@@ -63,7 +63,6 @@ class PolarDecoder_SCF(PolarDecoder_SC):
             elif self.vec_dec_sch[i] == 'R1':
                 self.vec_decoded_kr[info_ctr] = 0 if self.mem_alpha[0][0] >= 0 else 1
                 self.vec_leaf_mag[info_ctr] = np.abs(self.mem_alpha[0][0])
-                # self.vec_decoded_kr[info_ctr] = 0 if self.mem_alpha[0][0] >= 0 else 1
                 if self.vec_dec_sch_dir[i] == 0:
                     self.mem_beta_l[0][0] = 0 if self.mem_alpha[0][0] >= 0 else 1
                 else:
