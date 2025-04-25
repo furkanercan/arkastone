@@ -1,0 +1,72 @@
+{
+    "_comments": [
+        "This is a test configuration file.",
+        "Refer to ref_config_*.json5 files in the root directory for specific configurations with reference information."
+    ],
+    "code": {
+        "type": "POLAR",
+        "len_k": 512,
+        "polar":{
+            "polar_file": "src/lib/ecc/polar/3gpp/n1024_3gpp.pc",
+            "crc":{
+                "enable": false,
+                "length" : 6
+            },
+            "decoder":{
+                "algorithm": "SC",
+                "flip_max_iters": 30
+            },
+            "quantize": {
+                "enable": false,
+                "bits_chnl": 5,
+                "bits_intl": 6,
+                "bits_frac": 1
+            },
+            "fast_enable": true,
+            "fast_max_size": {
+                "rate0": 1024,
+                "rate1": 1024,
+                "rep": 1024,
+                "spc": 1024,
+                "ml_0011": 0,
+                "ml_0101": 0
+            }
+        }
+    },
+    "mod": {
+        "type": "QPSK",
+        "demod_type": "soft"
+    },
+    "channel": {
+        "type": "AWGN",
+        "seed": 42
+    },
+    "ofdm": {
+        "num_subcarriers": 64,
+        "cyclic_prefix_length": 16
+    },
+    "sim": {
+        "mode": "dev",
+        "sweep_type": "SNR",
+        "sweep_vals": {
+            "start": 1,
+            "end": 3,
+            "step": 1
+        },
+        "loop": {
+            "num_frames": 4000,
+            "num_errors": 10,
+            "max_frames": 10000
+        },
+        "save": {
+            "plot_enable": false,
+            "lutsim_enable": false,
+            "save_output": false
+        }
+    },
+    "reference": {
+        "snr":  [1.00000e+00, 2.00000e+00, 3.00000e+00],
+        "ber":  [2.81554e-01, 2.68472e-02, 2.38698e-04],
+        "bler": [7.63750e-01, 1.04750e-01, 1.99045e-03]
+    }
+}

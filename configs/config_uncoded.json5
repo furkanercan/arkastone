@@ -1,0 +1,46 @@
+{
+    "_comments": [
+        "This is the referebce configuration file for the following scheme.",
+        "UNCODED"
+    ],
+    "code": {
+        "type": "UNCODED",
+        "len_k": 128,
+        "uncoded":{
+            "decoder":{
+                "algorithm": "None"
+            }
+        }
+    },
+    "mod": {
+        "type": "QPSK",
+        "demod_type": "soft"
+    },
+    "ofdm": {
+        "num_subcarriers": 64,
+        "cyclic_prefix_length": 16
+    },
+    "channel": {
+        "type": "AWGN",
+        "seed": 42
+    },
+    "sim": {
+        "mode": "dev",
+        "sweep_type": "SNR",
+        "sweep_vals": {
+            "start": 1,
+            "end": 1,
+            "step": 1
+        },
+        "loop": {
+            "num_frames": 1000,
+            "num_errors": 0,
+            "max_frames": 1000000
+        },
+        "save": {
+            "plot_enable": false,
+            "lutsim_enable": false,
+            "save_output": false
+        }
+    }
+}

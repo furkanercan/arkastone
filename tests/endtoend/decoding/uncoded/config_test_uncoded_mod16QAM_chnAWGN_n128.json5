@@ -1,0 +1,51 @@
+{
+    "_comments": [
+        "This is the referebce configuration file for the following scheme.",
+        "UNCODED"
+    ],
+    "code": {
+        "type": "UNCODED",
+        "len_k": 128,
+        "uncoded":{
+            "decoder":{
+                "algorithm": "None"
+            }
+        }
+    },
+    "mod": {
+        "type": "16QAM",
+        "demod_type": "soft"
+    },
+    "ofdm": {
+        "num_subcarriers": 64,
+        "cyclic_prefix_length": 16
+    },
+    "channel": {
+        "type": "AWGN",
+        "seed": 42
+    },
+    "sim": {
+        "mode": "dev",
+        "sweep_type": "SNR",
+        "sweep_vals": {
+            "start": 8,
+            "end": 13,
+            "step": 1
+        },
+        "loop": {
+            "num_frames": 10000,
+            "num_errors": 50,
+            "max_frames": 10000000
+        },
+        "save": {
+            "plot_enable": false,
+            "lutsim_enable": false,
+            "save_output": false
+        }
+    },
+    "reference": {
+        "snr":  [8.000e+00, 9.000e+00, 1.000e+01, 1.100e+01, 1.200e+01, 1.300e+01],
+        "ber":  [9.86727e-02, 7.79508e-02, 5.87164e-02, 4.24359e-02, 2.79977e-02, 1.70437e-02],
+        "bler": [1.00000e+00, 1.00000e+00, 9.99600e-01, 9.97300e-01, 9.74400e-01, 8.89200e-01]
+    }
+}

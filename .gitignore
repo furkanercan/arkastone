@@ -1,0 +1,58 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+*.pyd
+
+# Virtual environments
+venv*
+venv/
+env/
+.venv/
+
+# Distribution/packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*.DS_Store
+output/*
+todo.list
+TODO.md
+sandbox/
+deprecated/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Testing-related files
+*.coverage
+.cache/
+pytest_cache/
+analyze_stats.py
+profile_output.prof
+temp*
+
+# Generated files
+*.sqlite3
+*.db
+tests/*/src
+tests/**/src
+tests/***/src
+tests/****/src
+examples/*/src
+examples/**/src
+examples/***/src
+examples/****/src
