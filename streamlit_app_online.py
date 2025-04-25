@@ -1,15 +1,3 @@
-st.markdown("""
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-4Z4NY98FFT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-4Z4NY98FFT');
-</script>
-""", unsafe_allow_html=True)
-
-
 import streamlit as st
 from src.utils.validation.config_loader import ConfigLoader
 from src.utils.validation.validation_manager import validate_config
