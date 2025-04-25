@@ -5,13 +5,13 @@
     ],
     "code": {
         "type": "POLAR",
-        "len_k": 64,
+        "len_k": 512,
         "polar":{
-            "polar_file": "src/lib/ecc/polar/3gpp/n128_3gpp.pc",
+            "polar_file": "src/lib/ecc/polar/3gpp/n1024_3gpp.pc",
             "crc":{
                 "enable": true,
                 "name": "my_crc",
-                "length" : 8,
+                "length" : 16,
                 "preload_val": 0,
                 "mode": "generic"
             },
@@ -53,13 +53,13 @@
         "mode": "dev",
         "sweep_type": "SNR",
         "sweep_vals": {
-            "start": 2,
+            "start": 1,
             "end": 3,
             "step": 0.25
         },
         "loop": {
             "num_frames": 10000,
-            "num_errors": 20,
+            "num_errors": 10,
             "max_frames": 100000
         },
         "save": {
