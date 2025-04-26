@@ -1,20 +1,20 @@
 import time
 import requests
 import json
-import sys
 import argparse
 from functools import partial
-from src.sim.sim_runner import run_simulation_from_config  # your real engine
+from src.sim.sim_runner import run_simulation_from_config
 
 SERVER_URL = "https://arkastone-backend.onrender.com"
 
 def fetch_job(session_id):
     try:
-        r = requests.get(f"{SERVER_URL}/get_job", params={"session_id": session_id})
-        if r.status_code == 200 and r.text.strip():
+        r = requests.get(f"{SERVER_URL}/get_job", params={"session_id": session_id}, timeout=10)
+        r.raise_for_status()
+        if r.text.strip():
             return r.json()
-    except Exception as e:
-        print("Error fetching job:", e)
+    except requests.RequestException as e:
+        print(f"[!] Network error fetching job: {e}")
     return None
 
 def make_json_serializable(obj):
@@ -31,55 +31,52 @@ def make_json_serializable(obj):
     else:
         return obj
 
-def send_progress(update, session_id):
+def safe_post(endpoint, payload, description):
     try:
-        safe_update = make_json_serializable(update)
-        json.dumps(safe_update)  # test serializability
-
-        payload = {
-            "session_id": session_id,
-            "progress": safe_update
-        }
-
-        r = requests.post(f"{SERVER_URL}/update_progress", json=payload)
-        # print("Progress sent:", r.status_code)
+        safe_payload = make_json_serializable(payload)
+        json.dumps(safe_payload)  # validate
+        r = requests.post(f"{SERVER_URL}/{endpoint}", json=safe_payload, timeout=10)
+        print(f"[+] {description} sent: {r.status_code}")
+    except requests.RequestException as e:
+        print(f"[!] Network error sending {description}: {e}")
     except Exception as e:
-        print("Error sending progress:", e)
-        print("Offending update payload:", update)
+        print(f"[!] Serialization error for {description}: {e}")
 
+def send_progress(update, session_id):
+    payload = {
+        "session_id": session_id,
+        "progress": update
+    }
+    safe_post("update_progress", payload, "progress")
 
 def send_result(result, session_id):
-    try:
-        safe_result = make_json_serializable(result)
-
-        payload = {
-            "session_id": session_id,
-            "result": safe_result
-        }
-
-        r = requests.post(f"{SERVER_URL}/submit_result", json=payload)
-        print("Result submitted:", r.status_code)
-    except Exception as e:
-        print("Error submitting result:", e)
+    payload = {
+        "session_id": session_id,
+        "result": result
+    }
+    safe_post("submit_result", payload, "result")
 
 def main():
     args = parse_args()
-    session_id = args.session
+    session_id = args.session or input("Enter your session ID: ").strip()
 
-    if not session_id:
-        session_id = input("Enter your session ID: ").strip()
-
-    print("Client started. Polling for jobs...")
-    while True:
-        job = fetch_job(session_id)
-        if job:
-            print("Job received. Running simulation...")
-            progress_with_session = partial(send_progress, session_id=session_id)
-            result = run_simulation_from_config(job, progress_callback=progress_with_session)
-            send_result(result, session_id)
-        else:
-            print("No job found. Retrying...")
-        time.sleep(5)
+    print("[*] Client started. Polling for jobs...")
+    try:
+        while True:
+            job = fetch_job(session_id)
+            if job:
+                print("[*] Job received. Running simulation...")
+                progress_with_session = partial(send_progress, session_id=session_id)
+                result = run_simulation_from_config(job, progress_callback=progress_with_session)
+                send_result(result, session_id)
+                print("[*] Simulation complete. Waiting for next job...")
+            else:
+                print("[*] No job found. Retrying in 5 seconds...")
+            time.sleep(5)
+    except KeyboardInterrupt:
+        print("\n[!] Client stopped manually.")
+    except Exception as e:
+        print(f"[!] Unexpected error: {e}")
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run Arkastone Client")
