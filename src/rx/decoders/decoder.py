@@ -5,9 +5,9 @@ from src.rx.decoders.uncoded_decoder import UncodedDecoder
 
 def create_decoder(code):
     if code.type == "polar":
-        if code.decoder == "SC".lower():
+        if code.decoder in ["SC".lower(), "Successive Cancellation".lower()]:
             return PolarDecoder_SC(code)
-        elif code.decoder == "SCF".lower():
+        elif code.decoder in ["SCF".lower(), "SC-Flip".lower(), "SCFlip".lower()]:
             return PolarDecoder_SCF(code)
         else:
             raise ValueError(f"Unsupported polar decoder type: {code.decoder}")    
