@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 PRIVATE_REPO = Path(__file__).resolve().parent
-PUBLIC_REPO = PRIVATE_REPO.parent / "arkastone"
+PUBLIC_REPO = PRIVATE_REPO.parent / "arkastone-public"
 SCRIPTS_DIR = PRIVATE_REPO / "scripts"
 
 PUBLIC_PATHS = [
@@ -70,12 +70,12 @@ def copy_public_files():
 def main():
     run_symlink_cleaner()
 
-    # if run_pytests():
-    copy_public_files()
-    # else:
-    #     print("❌ Tests failed. Aborting copy.")
-    #     run_symlink_restorer()
-    #     sys.exit(1)
+    if run_pytests():
+        copy_public_files()
+    else:
+        print("❌ Tests failed. Aborting copy.")
+        run_symlink_restorer()
+        sys.exit(1)
 
     run_symlink_restorer()
 
