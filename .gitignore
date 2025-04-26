@@ -44,6 +44,7 @@ pytest_cache/
 analyze_stats.py
 profile_output.prof
 temp*
+*/raw/*
 
 # Generated files
 *.sqlite3
