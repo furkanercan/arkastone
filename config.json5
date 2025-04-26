@@ -16,7 +16,7 @@
                 "mode": "generic"
             },
             "decoder":{
-                "algorithm": "SCF",
+                "algorithm": "SC",
                 "flip_max_iters": 10,
                 "list_size": 8
             },
@@ -53,14 +53,14 @@
         "mode": "dev",
         "sweep_type": "SNR",
         "sweep_vals": {
-            "start": 2,
+            "start": 3,
             "end": 3,
             "step": 0.25
         },
         "loop": {
-            "num_frames": 10000,
-            "num_errors": 20,
-            "max_frames": 100000
+            "num_frames": 1000,
+            "num_errors": 0,
+            "max_frames": 1000
         },
         "save": {
             "plot_enable": false,

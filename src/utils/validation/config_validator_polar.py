@@ -97,10 +97,12 @@ def validate_config_polar_fast_mode(config):
     }
 
     optional_keys = {
-        "rate0": (int, 4),
-        "rate1": (int, 4),
-        "rep": (int, 4),
-        "spc": (int, 4)
+        "max_rate0": (int, 4),
+        "max_rate1": (int, 4),
+        "max_rep": (int, 4),
+        "max_spc": (int, 4),
+        "max_ml_0011": (int, 4),
+        "max_ml_0101": (int, 4)
     }
 
     validate_required_keys(config, required_keys, "polar.fast_mode")

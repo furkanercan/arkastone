@@ -44,7 +44,7 @@ class PolarDecoder_SC():
         for _ in range(self.len_logn-1):
             matG = np.kron(matG, matG_core)
 
-        self.matG_Nxk = matG[:, self.info_indices]  # Capture k columns corresponding to info indices
+        self.matG_Nxk = matG[:, sorted(self.info_indices)]  # Capture k columns corresponding to info indices
 
     def initialize_decoder(self):
         if not self.vec_dec_sch:

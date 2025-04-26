@@ -53,7 +53,8 @@ class PolarEncoder(BaseEncoder):
             matG = np.kron(matG, matG_core)
 
         self.matG_NxN = matG
-        self.matG_kxN = matG[self.info_indices]
+        self.matG_kxN = matG[sorted(self.info_indices)] # used for reduced encoder effort
+        self.matG_Nxk = matG[:, sorted(self.info_indices)] # used for reduced decoder effort
         self.derive_parity_check_direct()
 
     def derive_parity_check_direct(self):
