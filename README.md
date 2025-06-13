@@ -1,7 +1,22 @@
-# Communications Project
+
+<p align="center">
+  <img src="assets/arkastone_logo_transparent.png" alt="Arkastone Logo" height="140">
+</p>
+
+<h1 align="center">Arkastone</h1>
+<h3 align="center">Modular PHY-Layer Communication Framework</h3>
+
+<p align="center">
+  <i>From bits to BER — modular and measurable.</i>
+</p>
+
+---
 
 ## Overview
-This project is a modular and object-oriented Python framework for simulating a complete digital communication system. It includes essential components such as transmission, reception, modulation, error correction, and channel modeling. The project is designed for research, development, and deployment, with a long-term goal of optimizing it using SIMD or similar techniques.
+**Arkastone** is a modular, object-oriented Python framework for simulating full-stack digital communication systems at the physical layer. It supports encoding, modulation, channel modeling, OFDM, decoding, and performance evaluation — all customizable and extensible for research, teaching, and prototyping.
+
+While primarily a simulation platform, Arkastone is designed with scalability and deployment in mind. Future versions aim to incorporate hardware acceleration via SIMD and other optimization techniques.
+
 
 ## Features
 - **Transmitter & Receiver Classes**: Implements the key components of a digital communication system.
