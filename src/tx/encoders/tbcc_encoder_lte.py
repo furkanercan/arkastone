@@ -40,3 +40,25 @@ def convolutional_encode_tail_biting_lte(u):
             output.append(bit)
 
     return output
+
+
+def convolutional_encode_terminated_lte(u):
+    """
+    LTE rate-1/3 convolutional encoder with zero-state start and tail termination.
+    u: input bits (list or np.array of 0/1)
+    returns: encoded sequence (list of 0/1), length = 3 * (len(u) + K - 1)
+    """
+    K = len(G0)  # Constraint length
+    u = list(u) + [0] * (K - 1)  # Pad with zeros to flush memory
+    N = len(u)
+
+    shift_reg = [0] * K
+    output = []
+
+    for i in range(N):
+        shift_reg = [u[i]] + shift_reg[:-1]
+        for g in generators:
+            bit = sum([g[j] & shift_reg[j] for j in range(K)]) % 2
+            output.append(bit)
+
+    return output
