@@ -28,6 +28,9 @@ modules/ofdm.md
 modules/decoder.md
 simulation/configuration.md
 testing/test_framework.md
+contributing.md
+deployment/deployment_guide.md
+project_board.md
 ```
 
 ---
