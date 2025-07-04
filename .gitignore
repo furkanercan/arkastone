@@ -1,54 +1,49 @@
-# Byte-compiled files
+# ----------------------------------------
+# Python bytecode and artifacts
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyc
 *.pyd
-
-# Virtual environments
-venv*
-venv/
-env/
-.venv/
-
-# Distribution/packaging
-build/
-dist/
 *.egg-info/
 .eggs/
 
-# Logs and temporary files
+# ----------------------------------------
+# Virtual environments
+.venv/
+venv/
+env/
+
+# ----------------------------------------
+# Build, packaging, and generated files
+build/
+dist/
+output/
 *.log
 *.tmp
 *.temp
-*.swp
-*.swo
-*.DS_Store
-output/*
-todo.list
-TODO.md
-sandbox/
-deprecated/
-
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints/
-
-# IDE-specific files
-.vscode/
-.idea/
-
-# Testing-related files
+*.sqlite3
+*.db
 *.coverage
 .cache/
+sandbox/
+temp*
+todo.list
+TODO.md
+
+# ----------------------------------------
+# Docs (Sphinx)
+docs/build/
+docs/source/_build/
+docs/source/_autosummary/
+docs/source/_static/auto/
+docs/.doctrees/
+
+# ----------------------------------------
+# Testing-specific files
 pytest_cache/
 analyze_stats.py
 profile_output.prof
-temp*
-*/raw/*
-
-# Generated files
-*.sqlite3
-*.db
 tests/*/src
 tests/**/src
 tests/***/src
@@ -57,3 +52,18 @@ examples/*/src
 examples/**/src
 examples/***/src
 examples/****/src
+
+# ----------------------------------------
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# ----------------------------------------
+# IDE/editor folders
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ----------------------------------------
+# OS-specific files
+.DS_Store

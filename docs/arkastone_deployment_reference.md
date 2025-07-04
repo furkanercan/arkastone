@@ -53,7 +53,7 @@ arkastone/
 ### ✅ SSH Into EC2:
 ```bash
 chmod 400 arkastone-key.pem
-ssh -i arkastone-key.pem ubuntu@<your-ec2-ip>
+ssh -i arkastone-aws-key.pem ubuntu@18.221.4.137
 ```
 
 ---
