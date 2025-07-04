@@ -67,3 +67,7 @@ examples/****/src
 # ----------------------------------------
 # OS-specific files
 .DS_Store
+
+# ----------------------------------------
+# Other files
+sensitive/
