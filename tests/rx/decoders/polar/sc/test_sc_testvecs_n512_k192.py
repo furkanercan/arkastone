@@ -1,5 +1,5 @@
 import numpy as np
-from pathlib import Path
+from huggingface_hub import hf_hub_download
 from src.coding.coding import Code
 from src.configs.config_code import CodeConfig
 from src.utils.validation.config_validator import validate_config_code
@@ -47,10 +47,11 @@ code = Code(config_code)
 
 def test_dec_sc_testvecs():
     # File paths
-    base_name = "ppile_sc_n512_k192_3gpp_Q0"  # Example
-    base_path = Path("tests/rx/decoders/polar/testvectors_ppile/sc/processed")
-    llr_file = base_path / f"{base_name}.in"
-    ref_file = base_path / f"{base_name}.out"
+    base_name = "sc_n512_k192_Q0"  # Example
+    llr_file = hf_hub_download(repo_id="furkanercan/arkastone-test-vectors", repo_type="dataset",
+                               filename=f"rx/dec_polar_sc/{base_name}.in")
+    ref_file = hf_hub_download(repo_id="furkanercan/arkastone-test-vectors", repo_type="dataset",
+                               filename=f"rx/dec_polar_sc/{base_name}.out")
 
     # Load test vectors
     with open(llr_file, "r") as f:
@@ -76,17 +77,10 @@ def test_dec_sc_testvecs():
         if np.array_equal(vec_decoded.astype(int), ref_vec):
             passed += 1
         else:
-            # Save mismatched vectors to a file
-            mismatch_file = Path(f"mismatch_vector_{idx}.txt")
-            with open(mismatch_file, "wb") as f:
-                np.array(ref_vec, dtype=np.uint8).tofile(f)
-                np.array(vec_decoded.astype(int), dtype=np.uint8).tofile(f)
-
             assert np.array_equal(vec_decoded, ref_vec), (
                 f"\n❌ Mismatch at vector {idx}:\n"
                 f"Expected: {ref_vec}\n"
-                f"Got     : {vec_decoded.tolist()}\n"
-                f"Mismatch saved to: {mismatch_file}"
+                f"Got     : {vec_decoded.tolist()}"
             )
 
 

@@ -1,24 +1,24 @@
 import numpy as np
-from pathlib import Path
+from huggingface_hub import hf_hub_download
 from src.coding.coding import Code
 from src.configs.config_code import CodeConfig
 from src.utils.validation.config_validator import validate_config_code
 from src.rx.decoders.polar.sc import PolarDecoder_SC
 
-# Setup code config
+# Setup code config (unchanged)
 code_config = {
     "type": "POLAR",
     "len_k": 192,
-    "polar":{
+    "polar": {
         "polar_file": "src/lib/ecc/polar/3gpp/n256_3gpp.pc",
-        "crc":{
+        "crc": {
             "enable": False,
             "name": "my_crc",
-            "length" : 6,
+            "length": 6,
             "preload_val": 0,
             "mode": "generic"
         },
-        "decoder":{
+        "decoder": {
             "algorithm": "SC",
             "flip_max_iters": 30,
             "list_size": 8
@@ -42,15 +42,15 @@ code_config = {
 }
 validate_config_code(code_config)
 config_code = CodeConfig.from_dict(code_config)
-code = Code(config_code) 
-
+code = Code(config_code)
 
 def test_dec_sc_testvecs():
-    # File paths
-    base_name = "ppile_sc_n256_k192_3gpp_Q0"  # Example
-    base_path = Path("tests/rx/decoders/polar/testvectors_ppile/sc/processed")
-    llr_file = base_path / f"{base_name}.in"
-    ref_file = base_path / f"{base_name}.out"
+    # Download test files
+    base_name = "sc_n256_k192_Q0"
+    llr_file = hf_hub_download(repo_id="furkanercan/arkastone-test-vectors", repo_type="dataset",
+                               filename=f"rx/dec_polar_sc/{base_name}.in")
+    ref_file = hf_hub_download(repo_id="furkanercan/arkastone-test-vectors", repo_type="dataset",
+                               filename=f"rx/dec_polar_sc/{base_name}.out")
 
     # Load test vectors
     with open(llr_file, "r") as f:
@@ -81,6 +81,5 @@ def test_dec_sc_testvecs():
                 f"Expected: {ref_vec}\n"
                 f"Got     : {vec_decoded.tolist()}"
             )
-
 
     print(f"\n✅ Passed {passed}/{total} tests.")

@@ -1,5 +1,5 @@
 import numpy as np
-from pathlib import Path
+from huggingface_hub import hf_hub_download
 from src.coding.coding import Code
 from src.configs.config_code import CodeConfig
 from src.utils.validation.config_validator import validate_config_code
@@ -47,10 +47,11 @@ code = Code(config_code)
 
 def test_dec_sc_testvecs():
     # File paths
-    base_name = "ppile_scf_n256_k192_crc8_t10_3gpp_Q0"  # Example
-    base_path = Path("tests/rx/decoders/polar/testvectors_ppile/scf/processed")
-    llr_file = base_path / f"{base_name}.in"
-    ref_file = base_path / f"{base_name}.out"
+    base_name = "scf_n256_k192_crc8_t10_Q0"  # Example
+    llr_file = hf_hub_download(repo_id="furkanercan/arkastone-test-vectors", repo_type="dataset",
+                               filename=f"rx/dec_polar_scf/{base_name}.in")
+    ref_file = hf_hub_download(repo_id="furkanercan/arkastone-test-vectors", repo_type="dataset",
+                               filename=f"rx/dec_polar_scf/{base_name}.out")
 
     # Load test vectors
     with open(llr_file, "r") as f:
@@ -77,15 +78,15 @@ def test_dec_sc_testvecs():
         if np.array_equal(vec_decoded_crc.astype(int), ref_vec):
             passed += 1
         else:
-            mismatch_indices = [i for i, (a, b) in enumerate(zip(ref_vec, vec_decoded_crc.astype(int))) if a != b]
-            mismatch_file = Path(f"mismatch_vector_{idx}.txt")
-            with open(mismatch_file, "w") as f:
-                f.write("Expected:\n")
-                f.write(" ".join(map(str, ref_vec)) + "\n")
-                f.write("Got:\n")
-                f.write(" ".join(map(str, vec_decoded_crc.astype(int))) + "\n")
-                f.write("Mismatch Indices:\n")
-                f.write(" ".join(map(str, mismatch_indices)) + "\n")
+            # mismatch_indices = [i for i, (a, b) in enumerate(zip(ref_vec, vec_decoded_crc.astype(int))) if a != b]
+            # mismatch_file = Path(f"mismatch_vector_{idx}.txt")
+            # with open(mismatch_file, "w") as f:
+            #     f.write("Expected:\n")
+            #     f.write(" ".join(map(str, ref_vec)) + "\n")
+            #     f.write("Got:\n")
+            #     f.write(" ".join(map(str, vec_decoded_crc.astype(int))) + "\n")
+            #     f.write("Mismatch Indices:\n")
+            #     f.write(" ".join(map(str, mismatch_indices)) + "\n")
 
             assert np.array_equal(vec_decoded_crc, ref_vec), (
                 f"\n❌ Mismatch at vector {idx}:\n"

@@ -1,5 +1,5 @@
 import numpy as np
-from pathlib import Path
+from huggingface_hub import hf_hub_download
 from src.coding.coding import Code
 from src.configs.config_code import CodeConfig
 from src.utils.validation.config_validator import validate_config_code
@@ -48,10 +48,11 @@ code = Code(config_code)
 
 def test_dec_sc_testvecs():
     # File paths
-    base_name = "ppile_sc_n1024_k128_3gpp_Q0"  # Example
-    base_path = Path("tests/rx/decoders/polar/testvectors_ppile/sc/processed")
-    llr_file = base_path / f"{base_name}.in"
-    ref_file = base_path / f"{base_name}.out"
+    base_name = "sc_n1024_k128_Q0"  # Example
+    llr_file = hf_hub_download(repo_id="furkanercan/arkastone-test-vectors", repo_type="dataset",
+                               filename=f"rx/dec_polar_sc/{base_name}.in")
+    ref_file = hf_hub_download(repo_id="furkanercan/arkastone-test-vectors", repo_type="dataset",
+                               filename=f"rx/dec_polar_sc/{base_name}.out")
 
     # Load test vectors
     with open(llr_file, "r") as f:
