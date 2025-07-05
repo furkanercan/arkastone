@@ -113,7 +113,7 @@ starlette==0.46.2
 streamlit==1.44.1
 tenacity==9.1.2
 toml==0.10.2
-tornado==6.4.2
+tornado==6.5
 tqdm==4.67.1
 traitlets==5.14.3
 typing-inspection==0.4.0
