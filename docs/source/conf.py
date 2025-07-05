@@ -15,9 +15,11 @@ release = '0.1'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = ['myst_parser']
-
+myst_enable_extensions = [
+    "colon_fence",  # optional but useful
+]
 templates_path = ['_templates']
-exclude_patterns = []
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 source_suffix = {
     '.rst': 'restructuredtext',

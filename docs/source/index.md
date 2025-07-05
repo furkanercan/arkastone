@@ -1,3 +1,4 @@
+# ![Arkastone Logo](assets/arkastone_logo_transparent.png)
 
 # Arkastone Documentation
 
@@ -29,21 +30,26 @@ modules/decoder.md
 simulation/configuration.md
 testing/test_framework.md
 contributing.md
-deployment/deployment_guide.md
-project_board.md
 ```
 
 ---
 
 ## 📦 Installation
 
+Clone the repository:
+
 ```bash
 git clone https://github.com/yourname/arkastone.git
 cd arkastone
+```
+
+Install dependencies directly:
+
+```bash
 pip install -r requirements.txt
 ```
 
-Or set up a virtual environment:
+Or use a virtual environment:
 
 ```bash
 python3 -m venv .venv
@@ -76,7 +82,7 @@ We welcome PRs, issues, and feature requests!
 
 1. Fork the repo
 2. Run tests locally
-3. Follow our [contribution guidelines](contributing.md) (coming soon)
+3. Follow our [contribution guidelines](contributing.md)
 
 ---
 
