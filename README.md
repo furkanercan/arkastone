@@ -31,12 +31,12 @@ While primarily a simulation platform, Arkastone is designed with scalability an
 To set up the project environment:
 ```sh
 # Clone the repository
-git clone <repo_url>
-cd <project_directory>
+git clone https://github.com/furkanercan/arkastone.git
+cd arkastone
 
 # Create a virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+python -m venv .venv
+source .venv/bin/activate  # On Windows, use `venv\Scripts\activate`
 
 # Install dependencies
 pip install -r requirements.txt
@@ -47,7 +47,7 @@ Example simulations for the entire TX/RX chain are located under examples/ folde
 They must be run from the root folder.
 First, set the environment correctly - otherwise the local exports may not get recognized:
 ```sh
-export PYTHONPATH=/path_to_root_folder/src:$PYTHONPATH
+export PYTHONPATH=$(pwd)/src:$PYTHONPATH
 ```
 Then, run the example script:
 ```sh
