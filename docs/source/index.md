@@ -34,39 +34,6 @@ contributing.md
 
 ---
 
-## 📦 Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/yourname/arkastone.git
-cd arkastone
-```
-
-Install dependencies directly:
-
-```bash
-pip install -r requirements.txt
-```
-
-Or use a virtual environment:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
----
-
-## 🧪 Run a Simulation
-
-```bash
-python main.py --config config/basic_ofdm.json5
-```
-
----
-
 ## 🧠 Who Should Use Arkastone?
 
 - **Researchers**: Rapidly test new PHY-layer techniques

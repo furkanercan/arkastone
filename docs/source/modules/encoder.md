@@ -112,9 +112,3 @@ encoded_bits = encoder.encode(info_bits)  # Output: [0, 1, 0, 1, ...]
 | Readable and testable     | Each encoder is isolated and modular  |
 
 ---
-
-## 📚 Next Steps
-
-- [ ] Add diagrams in `docs/architecture/diagrams/encoder_arch.drawio`
-- [ ] Link this doc in project README and developer onboarding
-- [ ] Apply the same structure to Decoder, Modulator, Channel models
